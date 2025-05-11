@@ -1,4 +1,5 @@
 .chat_content {
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -8,6 +9,17 @@
 
     padding-bottom: 20px;
     border-left: 1px solid var(--border-faint);
+
+    .resize_bar {
+        position: absolute;
+        top: 0;
+        width: 4px;
+        height: 100%;
+
+        &:hover {
+            cursor: ew-resize;
+        }
+    }
 
     .messages {
         overflow: scroll;
@@ -27,7 +39,7 @@
 
 @media only screen and (max-width: 1000px) {
     .chat_content {
-        width: 100%;
+        width: 100% !important;
         height: 250px;
 
         border-top: 1px solid var(--border-faint);

@@ -18,8 +18,10 @@ export const ChatContent = memo((props: ChatContentProps) => {
     const channelId = useParams().channelId;
     
     const usernameRef = useRef<string>(`Guest_${Math.floor(Math.random() * 1000)}`);
+    const chatContentRef = useRef<HTMLDivElement>(null);
     const messagesRef = useRef<HTMLOListElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const resizeBarRef = useRef<HTMLDivElement>(null);
 
     const [ messages, setMessages ] = useState<(
         { type: 'message', username: string, content: string } |
@@ -32,6 +34,31 @@ export const ChatContent = memo((props: ChatContentProps) => {
             content: message
         });
     }
+
+    useEffect(() => {
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        const resizeBar = resizeBarRef.current;
+        const chatContent = chatContentRef.current;
+        if (!resizeBar || !chatContent) return;
+
+        let resizing = false;
+        resizeBar?.addEventListener("mousedown", () => {
+            resizing = true;
+        }, { signal });
+        document.addEventListener("mousemove", (e) => {
+            if (!resizing) return;
+
+            const width = chatContent.getBoundingClientRect().right - e.clientX;
+            chatContent.style.width = `${Math.min(Math.max(width, 400), 750)}px`;
+        }, { signal });
+        document.addEventListener("mouseup", () => {
+            resizing = false
+        }, { signal });
+
+        return () => controller.abort();
+    }, []);
 
     useEffect(() => {
         const el = messagesRef.current;
@@ -79,7 +106,15 @@ export const ChatContent = memo((props: ChatContentProps) => {
     }, []);
     
     return (<>
-        <div className={styles.chat_content}>
+        <div
+            ref={chatContentRef}
+            className={styles.chat_content}
+        >
+            <div
+                ref={resizeBarRef}
+                className={styles.resize_bar}
+                onMouseDown={(e) => e.preventDefault()}
+            ></div>
             <ol ref={messagesRef} className={styles.messages}>
                 {messages.map((m, i) => <>
                     {m.type === 'message' && <ChatMessage
