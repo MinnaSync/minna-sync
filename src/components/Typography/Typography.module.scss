@@ -1,0 +1,59 @@
+.typography {
+    padding: 0;
+    margin: 0;
+}
+
+.header {
+    font-family: var(--font-header);
+}
+
+.body {
+    font-family: var(--font-body);
+}
+
+h3 {
+    font-size: 28px;
+}
+
+h4 {
+    font-size: 18px;
+}
+
+p {
+    font-size: 16px;
+}
+
+.bolder {
+    font-weight: bolder;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.medium {
+    font-weight: medium;
+}
+
+.normal {
+    font-weight: normal;
+}
+
+.lighter {
+    font-weight: lighter;
+}
+
+.link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    width: fit-content;
+    
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}

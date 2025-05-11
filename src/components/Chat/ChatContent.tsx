@@ -1,0 +1,120 @@
+import { useEffect, useState, useRef, memo } from "react";
+import { useParams } from "react-router";
+import { type websocket } from "#/util/ws/connection";
+import { UserJoinEvent, type UserMessageEvent } from "#/util/ws/types";
+
+import styles from "./ChatContent.module.scss";
+import { ChatMessage } from "./ChatMessage";
+import { ChatNotification } from "./ChatNotification";
+import { Input } from "#/components/Input/Input";
+import Typography from "#/components/Typography/Typography";
+import { EnterIcon, LeaveIcon } from "#/components/Icons/Icons";
+
+type ChatContentProps = {
+    websocket: React.RefObject<typeof websocket>;
+}
+
+export const ChatContent = memo((props: ChatContentProps) => {
+    const channelId = useParams().channelId;
+    
+    const usernameRef = useRef<string>(`Guest_${Math.floor(Math.random() * 1000)}`);
+    const messagesRef = useRef<HTMLOListElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const [ messages, setMessages ] = useState<(
+        { type: 'message', username: string, content: string } |
+        { type: 'notification', icon: React.ReactNode, accent: 'primary' | 'green' | 'red' | 'orange'; message: string }
+    )[]>([]);
+
+    const sendMessage = (message: string) => {
+        props.websocket.current?.emit("send_message", {
+            username: usernameRef.current,
+            content: message
+        });
+    }
+
+    useEffect(() => {
+        const el = messagesRef.current;
+        if (!el) return;
+
+        const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+        if (isAtBottom) {
+            el.scrollTop = el.scrollHeight;
+        }
+    }, [messages]);
+
+    useEffect(() => {
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        const ws = props.websocket.current;
+
+        ws?.on("user_joined", (data: UserJoinEvent) => {
+            setMessages((p) => [...p, {
+                type: 'notification',
+                icon: <EnterIcon />,
+                accent: 'green',
+                message: `${data} has joined the channel.`,
+            }]);
+        });
+
+        ws?.on("user_left", (data: UserJoinEvent) => {
+            setMessages((p) => [...p, {
+                type: 'notification',
+                icon: <LeaveIcon />,
+                accent: 'red',
+                message: `${data} has left the channel.`,
+            }]);
+        });
+
+        ws?.on("receive_message", (data: UserMessageEvent) => {
+            setMessages((p) => [...p, {
+                type: 'message',
+                username: data.username,
+                content: data.content
+            }]);
+        }, { signal });
+
+        return () => controller.abort();
+    }, []);
+    
+    return (<>
+        <div className={styles.chat_content}>
+            <ol ref={messagesRef} className={styles.messages}>
+                {messages.map((m, i) => <>
+                    {m.type === 'message' && <ChatMessage
+                        key={i}
+                        username={m.username}
+                        children={m.content}
+                    />}
+                    {m.type === 'notification' && <ChatNotification
+                        key={i}
+                        icon={m.icon}
+                        accent={m.accent}
+                        children={<>
+                            <Typography tag="span">{m.message}</Typography>
+                        </>}
+                    />}</>
+                )}
+            </ol>
+            <div className={styles.chat_input}>
+                <form onSubmit={(e) => {
+                    if (!inputRef.current) return;
+
+                    e.preventDefault();
+                    const message = inputRef.current.value;
+
+                    if (message) {
+                        sendMessage(message);
+                        inputRef.current.value = "";
+                    }
+                }}>
+                    <Input
+                        ref={inputRef}
+                        placeholder={`Message #${channelId}`}
+                    />
+                </form>
+            </div>
+        </div>
+    </>);
+});

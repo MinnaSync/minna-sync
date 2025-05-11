@@ -1,0 +1,57 @@
+.carousel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+
+    .items {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+
+        .list {
+            display: flex;
+            transition: transform 0.3s ease-in-out;
+    
+            list-style: none;
+            padding: 0;
+            margin: 0;
+    
+            width: 100%;
+            height: 100%;
+
+            &.direction_horizontal {
+                flex-direction: row;
+                transform: translateY(0);
+            }
+            &.direction_vertical {
+                flex-direction: column;
+                transform: translateX(0);
+            }
+        }
+    
+        .item {
+            flex: 0 0 100%;
+            width: 100%;
+            height: 100%;
+    
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            user-select: none;
+        }
+
+        .image_content {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+    }
+
+    .controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+}

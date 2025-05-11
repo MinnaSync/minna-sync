@@ -1,0 +1,19 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+
+    .page_contents {
+        overflow: hidden;
+        display: flex;
+        flex-direction: row;
+        flex: 1; 
+    }
+}
+
+@media only screen and (max-width: 1000px) {
+    .container .page_contents {
+        display: flex;
+        flex-direction: column;
+    }
+}
