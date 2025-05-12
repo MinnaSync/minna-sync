@@ -6,7 +6,6 @@
     justify-content: flex-end;
 
     width: 400px;
-    min-width: 400px;
 
     padding-bottom: 20px;
     border-left: 1px solid var(--border-faint);
@@ -41,7 +40,7 @@
 @media only screen and (max-width: 1000px) {
     .chat_content {
         width: 100% !important;
-        height: 250px;
+        height: 350px;
 
         border-top: 1px solid var(--border-faint);
         border-left: none;

@@ -22,8 +22,8 @@
     }
 
     .player {
-        overflow: hidden;
-        width: 100%;
+        max-height: 100vh;
+        max-width: fit-content;
     }
 
     .controls {
