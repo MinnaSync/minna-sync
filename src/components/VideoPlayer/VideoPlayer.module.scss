@@ -1,15 +1,13 @@
-.video_player_wrapper {
+.video_player {
     --accent-color: var(--accent-primary);
 
-    overflow: hidden;
-
     cursor: none;
+    overflow: hidden;
     position: relative;
     display: flex;
 
-    height: 100%;
     width: 100%;
-    min-height: 250px;
+    height: 100%;
 
     user-select: none;
     font-family: Arial, Helvetica, sans-serif;
@@ -17,18 +15,19 @@
     &.focused {
         cursor: default;
 
-        .video_controls {
+        .controls {
             opacity: 1;
             pointer-events: all;
         }
     }
 
-    .video_player {
+    .player {
         overflow: hidden;
         width: 100%;
     }
 
-    .video_controls {
+    .controls {
+        z-index: 1000;
         position: absolute;
         display: flex;
         flex-direction: column;

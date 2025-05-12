@@ -1,7 +1,7 @@
 import { useCallback, memo, useEffect, useRef, useState } from "react";
 
-import { PlayIcon, PauseIcon, ReplayIcon, FullscreenIcon, VolumeMuteIcon, VolumeMaxIcon, VolumeMinIcon } from "./Icons";
 import styles from "./ControlButton.module.scss";
+import { PlayIcon, PauseIcon, ReplayIcon, FullscreenIcon, VolumeMuteIcon, VolumeMaxIcon, VolumeMinIcon } from "#/components/Icons/Icons";
 
 type BaseControlButtonProps = {
     ref?: React.Ref<HTMLButtonElement>;
@@ -117,6 +117,8 @@ export const VolumeButton = memo((props: {
                 clearTimeout(touchFocusTimeout);
             }
 
+            // @ts-ignore
+            // Bun uses the web standard as "number".
             touchFocusTimeout = setTimeout(() => {
                 setFocused(false);
             }, 1_000);
