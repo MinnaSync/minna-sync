@@ -49,9 +49,8 @@ function connect() {
     }, { signal });
 
     ws.addEventListener("close", () => {
-        emit("disconnected", null, { queue: false });
-
         controller.abort();
+        
         connect();
     }, { signal });
 
