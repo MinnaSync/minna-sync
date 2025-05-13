@@ -1,4 +1,4 @@
-import { createElement } from 'react';
+import { createElement, memo } from 'react';
 import styles from './Typography.module.scss';
 
 type TypographyProps = {
@@ -8,10 +8,10 @@ type TypographyProps = {
     children: React.ReactNode;
 };
 
-export default function Typography({ tag = 'p', font = 'body', weight = 'normal', children }: TypographyProps) {
+export const Typography = memo(({ tag = 'p', font = 'body', weight = 'normal', children }: TypographyProps) => {
     return createElement(
         tag,
         { className: `${styles.typography} ${styles[font]} ${styles[weight]}` },
         children
     );
-}
+})

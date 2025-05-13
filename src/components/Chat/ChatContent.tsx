@@ -6,7 +6,7 @@ import { UserJoinEvent, UserLeftEvent, type UserMessageEvent } from "#/util/ws/t
 import styles from "./ChatContent.module.scss";
 import { ChatMessage } from "./ChatMessage";
 import { ChatNotification } from "./ChatNotification";
-import Typography from "#/components/Typography/Typography";
+import { Typography } from "#/components/Typography/Typography";
 import { EnterIcon, LeaveIcon } from "#/components/Icons/Icons";
 import { MessageInput } from "../Input/MessageInput";
 
