@@ -1,6 +1,6 @@
 import { errAsync, okAsync } from "neverthrow";
 
-const BASE_URL = 'http://127.0.0.1:3000/';
+const BASE_URL = import.meta.env.VITE_CONSUMET_URL;
 
 async function request<T>(
     method: string,
