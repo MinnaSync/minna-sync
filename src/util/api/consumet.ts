@@ -30,8 +30,8 @@ async function request<T>(
     return okAsync(await res.json() as T);
 }
 
-export function zoroSearch(searchQuery: string, query?: { path?: string; }) {
-    return request<{
+export async function zoroSearch(searchQuery: string, query?: { path?: string; }) {
+    return await request<{
         totalPages: number;
         currentPage: number;
         hasNextPage: boolean;
@@ -51,8 +51,8 @@ export function zoroSearch(searchQuery: string, query?: { path?: string; }) {
     }>('GET', `/anime/zoro/${searchQuery}`, query);
 }
 
-export function zoroInfo(query: { id: string; }) {
-    return request<{
+export async function zoroInfo(query: { id: string; }) {
+    return await request<{
         id: string;
         title: string;
         url: string;
@@ -73,8 +73,8 @@ export function zoroInfo(query: { id: string; }) {
     }>('GET', `/anime/zoro/info`, query);
 }
 
-export function zoroEpisode(episodeId: string, query?: { server?: "vidcloud" | "streamsb" | "vidstreaming" | "streamtape" | "vidcloud" }) {
-    return request<{
+export async function zoroEpisode(episodeId: string, query?: { server?: "vidcloud" | "streamsb" | "vidstreaming" | "streamtape" | "vidcloud" }) {
+    return await request<{
         headers: {
             Referrer: string;
             watchsb: string | null;
