@@ -27,7 +27,7 @@ export function SearchResult({ title, image, type, episodes, nsfw }: SearchResul
                             {type}
                         </Typography>
                     </div>
-                    {episodes.subbed && (
+                    {episodes.subbed !== 0 && (
                         <div className={styles.tag}>
                             <ClosedCaptionIcon />
                             <Typography font="body" weight="normal" tag="h5">
@@ -35,7 +35,7 @@ export function SearchResult({ title, image, type, episodes, nsfw }: SearchResul
                             </Typography>
                         </div>
                     )}
-                    {episodes.dubbed && (
+                    {episodes.dubbed !== 0 && (
                         <div className={styles.tag}>
                             <MicrophoneIcon />
                             <Typography font="body" weight="normal" tag="h5">
