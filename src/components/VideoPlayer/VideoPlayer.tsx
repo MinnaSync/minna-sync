@@ -47,7 +47,7 @@ export function VideoPlayer({ src }: VideoPlayerProps) {
     // const [ isMuted, setMuted ] = useState(false);
     
     const handlePausePlay = useCallback(async () => {
-        if (!playerRef.current || !playerRef.current.canPlayQueue) return;
+        if (!playerRef.current || !playerRef.current.state.canPlay) return;
         playerRef.current.paused
             ? await playerRef.current.play()
             : playerRef.current.pause();
