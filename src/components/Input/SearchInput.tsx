@@ -8,21 +8,22 @@ import styles from "./SearchInput.module.scss";
 import { SearchResult, SearchResultProps } from "./SearchResult";
 
 export function SearchInput() {
-    const ref = useRef<HTMLInputElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const [ results, setResults ] = useState<SearchResultProps[]>([]);
     const [ searchHasValue, setSearchHasValue ] = useState(false);
+    const [ isFocused, setIsFocused ] = useState(false);
 
     const handleSearch = useCallback(async () => {
-        if (ref.current?.value === undefined) return;
+        if (inputRef.current?.value === undefined) return;
         
-        const query = ref.current.value;
+        const query = inputRef.current.value;
         if (query.length < 3) {
             setResults([]);
             return;
         };
 
-        const info = await zoroSearch(ref.current.value);
+        const info = await zoroSearch(inputRef.current.value);
         if (info.isErr()) return;
 
         // Sorts the results by type.
@@ -32,25 +33,28 @@ export function SearchInput() {
             const results = info.value.results.filter((r) => r.type === type);
             if (results.length === 0) continue;
 
-            sortedResults.push(...results.map((r) => ({
-                title: r.title,
-                image: r.image,
-                type: r.type,
-                nsfw: r.nsfw,
-                episodes: {
-                    subbed: r.sub,
-                    dubbed: r.dub
-                }
-            })));
+            sortedResults.push(...
+                results.map(({ id, title, image, type, nsfw, sub, dub }) => ({
+                    id: id,
+                    title: title,
+                    image: image,
+                    type: type,
+                    nsfw: nsfw,
+                    episodes: {
+                        subbed: sub,
+                        dubbed: dub
+                    }
+                }))
+            );
         }
 
         setResults(sortedResults);
     }, []);
 
     const handleClear = useCallback(() => {
-        if (!ref.current) return;
+        if (!inputRef.current) return;
 
-        ref.current.value = "";
+        inputRef.current.value = "";
         setResults([]);
         setSearchHasValue(false);
     }, [results]);
@@ -59,10 +63,9 @@ export function SearchInput() {
         const controller = new AbortController();
         const signal = controller.signal;
 
-        const input = ref.current;
+        const input = inputRef.current;
         
         let timeout: number | null = null;
-
         input?.addEventListener('keyup', () => {
             if (timeout) {
                 clearTimeout(timeout);
@@ -82,6 +85,14 @@ export function SearchInput() {
 
             setSearchHasValue(input.value.length > 0);
         }, { signal });
+
+        input?.addEventListener('focus', () => {
+            setIsFocused(true);
+        }, { signal });
+
+        input?.addEventListener('blur', () => {
+            setIsFocused(false);
+        }, { signal });
     }, []);
 
     return (<>
@@ -89,7 +100,7 @@ export function SearchInput() {
             <div className={styles.search_input}>
                 <SearchIcon />
                 <Input
-                    ref={ref}
+                    ref={inputRef}
                     placeholder="Search Anime"
                 />
                 {searchHasValue && (
@@ -98,7 +109,7 @@ export function SearchInput() {
                     </div>
                 )}
             </div>
-            <div className={`${styles.search_content}${results.length > 0 ? ` ${styles.has_content}` : ''}`}>
+            <div className={`${styles.search_content}${results.length > 0 ? ` ${styles.has_content}` : ''}${isFocused ? ` ${styles.focused}` : ''}`}>
                 {results
                     .map((result) => (
                         <SearchResult
