@@ -15,7 +15,7 @@ export function Channel() {
     useEffect(() => {
         const socket = websocketRef.current;
         
-        socket.once("connected", () => {
+        socket.on("connected", () => {
             socket.emit("join_room", channelId);
         });
     }, []);
