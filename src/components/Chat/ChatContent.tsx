@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, memo } from "react";
 import { useParams } from "react-router";
 import { type websocket } from "#/util/ws/connection";
-import { UserJoinEvent, type UserMessageEvent } from "#/util/ws/types";
+import { UserJoinEvent, UserLeftEvent, type UserMessageEvent } from "#/util/ws/types";
 
 import styles from "./ChatContent.module.scss";
 import { ChatMessage } from "./ChatMessage";
@@ -17,21 +17,19 @@ type ChatContentProps = {
 export const ChatContent = memo((props: ChatContentProps) => {
     const channelId = useParams().channelId;
     
-    const usernameRef = useRef<string>(`Guest_${Math.floor(Math.random() * 1000)}`);
     const chatContentRef = useRef<HTMLDivElement>(null);
     const messagesRef = useRef<HTMLOListElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const resizeBarRef = useRef<HTMLDivElement>(null);
 
     const [ messages, setMessages ] = useState<(
-        { type: 'message', username: string, content: string } |
+        { type: 'message', username: string, message: string } |
         { type: 'notification', icon: React.ReactNode, accent: 'primary' | 'green' | 'red' | 'orange'; message: string }
     )[]>([]);
 
     const sendMessage = (message: string) => {
         props.websocket.current?.emit("send_message", {
-            username: usernameRef.current,
-            content: message
+            message: message
         });
     }
 
@@ -81,24 +79,24 @@ export const ChatContent = memo((props: ChatContentProps) => {
                 type: 'notification',
                 icon: <EnterIcon />,
                 accent: 'green',
-                message: `${data} has joined the channel.`,
+                message: `${data.username} has joined the channel.`,
             }]);
         });
 
-        ws?.on("user_left", (data: UserJoinEvent) => {
+        ws?.on("user_left", (data: UserLeftEvent) => {
             setMessages((p) => [...p, {
                 type: 'notification',
                 icon: <LeaveIcon />,
                 accent: 'red',
-                message: `${data} has left the channel.`,
+                message: `${data.username} has left the channel.`,
             }]);
         });
 
-        ws?.on("receive_message", (data: UserMessageEvent) => {
+        ws?.on("receive_message", ({ username, message }: UserMessageEvent) => {
             setMessages((p) => [...p, {
                 type: 'message',
-                username: data.username,
-                content: data.content
+                username: username,
+                message: message
             }]);
         }, { signal });
 
@@ -120,7 +118,7 @@ export const ChatContent = memo((props: ChatContentProps) => {
                     {m.type === 'message' && <ChatMessage
                         key={i}
                         username={m.username}
-                        children={m.content}
+                        children={m.message}
                     />}
                     {m.type === 'notification' && <ChatNotification
                         key={i}

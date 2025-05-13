@@ -11,13 +11,13 @@ export type MessageEvent = {
 
 export type UserMessageEvent = {
     username: string;
-    content: string;
+    message: string;
 };
 
 export type UserJoinEvent = {
-    roomId: string;
+    username: string;
 };
 
 export type UserLeftEvent = {
-    roomId: string;
+    username: string;
 };
