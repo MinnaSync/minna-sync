@@ -6,9 +6,9 @@ import { UserJoinEvent, type UserMessageEvent } from "#/util/ws/types";
 import styles from "./ChatContent.module.scss";
 import { ChatMessage } from "./ChatMessage";
 import { ChatNotification } from "./ChatNotification";
-import { Input } from "#/components/Input/Input";
 import Typography from "#/components/Typography/Typography";
 import { EnterIcon, LeaveIcon } from "#/components/Icons/Icons";
+import { MessageInput } from "../Input/MessageInput";
 
 type ChatContentProps = {
     websocket: React.RefObject<typeof websocket>;
@@ -144,9 +144,9 @@ export const ChatContent = memo((props: ChatContentProps) => {
                         inputRef.current.value = "";
                     }
                 }}>
-                    <Input
+                    <MessageInput
                         ref={inputRef}
-                        placeholder={`Message #${channelId}`}
+                        channel={channelId}
                     />
                 </form>
             </div>
