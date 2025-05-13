@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, memo } from "react";
+import { useEffect, useState, useRef, memo, Fragment } from "react";
 import { useParams } from "react-router";
 import { type websocket } from "#/util/ws/connection";
 import { UserJoinEvent, UserLeftEvent, type UserMessageEvent } from "#/util/ws/types";
@@ -114,20 +114,20 @@ export const ChatContent = memo((props: ChatContentProps) => {
                 onMouseDown={(e) => e.preventDefault()}
             ></div>
             <ol ref={messagesRef} className={styles.messages}>
-                {messages.map((m, i) => <>
-                    {m.type === 'message' && <ChatMessage
-                        key={i}
-                        username={m.username}
-                        children={m.message}
-                    />}
-                    {m.type === 'notification' && <ChatNotification
-                        key={i}
-                        icon={m.icon}
-                        accent={m.accent}
-                        children={<>
-                            <Typography tag="span">{m.message}</Typography>
-                        </>}
-                    />}</>
+                {messages.map((m, i) =>
+                    <Fragment key={i}>
+                        {m.type === 'message' && <ChatMessage
+                            username={m.username}
+                            children={m.message}
+                        />}
+                        {m.type === 'notification' && <ChatNotification
+                            icon={m.icon}
+                            accent={m.accent}
+                            children={<>
+                                <Typography tag="span">{m.message}</Typography>
+                            </>}
+                        />}
+                    </Fragment>
                 )}
             </ol>
             <div className={styles.chat_input}>
