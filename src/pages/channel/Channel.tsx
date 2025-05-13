@@ -5,7 +5,8 @@ import styles from "./Channel.module.scss"
 import { Header } from "#/components/Header/Header";
 import { websocket } from "#/util/ws/connection";
 import { ChatContent } from "#/components/Chat/ChatContent";
-import { VideoPlayer } from "#/components/VideoPlayer/VideoPlayer";
+import { VideoPlayer } from "#/components/VIdeoPlayer/VideoPlayer";
+import { SearchInput } from "#/components/Input/SearchInput";
 
 export function Channel() {
     const channelId = useParams().channelId;
@@ -17,16 +18,16 @@ export function Channel() {
         socket.once("connected", () => {
             socket.emit("join_room", channelId);
         });
-
-        return () => socket.emit("leave_room", channelId);
     }, []);
 
     return (<>
         <div className={styles.container}>
-            <Header />
+            <Header>
+                <SearchInput />
+            </Header>
             <div className={styles.page_contents}>
                 <VideoPlayer
-                    src="/videos/test.mp4"
+                    src={""}
                 />
                 <ChatContent
                     websocket={websocketRef}

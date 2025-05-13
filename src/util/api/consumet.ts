@@ -38,9 +38,15 @@ export function zoroSearch(searchQuery: string, query?: { path?: string; }) {
         results: Array<{
             id: string;
             title: string;
+            url: string;
             image: string;
-            releaseDate: string | null;
-            subOrDub: "sub" | "dub";
+            duration: string;
+            japaneseTitle: string;
+            type: string;
+            nsfw: boolean;
+            sub: number;
+            dub: number;
+            episodes: number;
         }>;
     }>('GET', `/anime/zoro/${searchQuery}`, query);
 }

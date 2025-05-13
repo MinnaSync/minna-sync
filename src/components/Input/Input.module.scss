@@ -1,8 +1,13 @@
 .input_container {
     --accent-color: var(--accent-primary);
 
-    border-radius: 8px;
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
 
+    padding: 15px;
+
+    border-radius: 8px;
     border: 1px solid var(--border-faint);
     background-color: var(--input-background);
 
@@ -10,9 +15,9 @@
 
     input {
         width: 100%;
-        padding: 15px;
+        height: 100%;
+        
         border: none;
-
         background-color: transparent;
         color: white;
         font-family: var(--font-body);

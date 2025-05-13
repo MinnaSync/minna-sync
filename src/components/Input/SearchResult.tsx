@@ -1,0 +1,35 @@
+import Typography from "#/components/Typography/Typography";
+import { ClosedCaptionIcon } from "#/components/Icons/Icons";
+
+import styles from "./SearchResult.module.scss";
+
+export type SearchResultProps = {
+    title: string;
+    image: string;
+    type: string;
+    episodes: number;
+};
+
+export function SearchResult({ title, image, type, episodes }: SearchResultProps) {
+    return (<>
+        <div className={styles.search_result}>
+            <img className={styles.image} src={image} />
+            <div className={styles.anime_info}>
+                <Typography font="header" weight="bold" tag="h5">{title}</Typography>
+                <div className={styles.tags}>
+                    <div className={styles.tag}>
+                        <Typography font="body" weight="normal" tag="h5">
+                            {type}
+                        </Typography>
+                    </div>
+                    <div className={styles.tag}>
+                        <ClosedCaptionIcon />
+                        <Typography font="body" weight="normal" tag="h5">
+                            {episodes}
+                        </Typography>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </>);
+}
