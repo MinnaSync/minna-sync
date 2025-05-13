@@ -36,7 +36,10 @@ export function SearchInput() {
                 image: r.image,
                 type: r.type,
                 nsfw: r.nsfw,
-                episodes: r.sub
+                episodes: {
+                    subbed: r.sub,
+                    dubbed: r.dub
+                }
             })));
         }
 

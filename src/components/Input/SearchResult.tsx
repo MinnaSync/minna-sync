@@ -1,5 +1,5 @@
 import Typography from "#/components/Typography/Typography";
-import { ClosedCaptionIcon } from "#/components/Icons/Icons";
+import { ClosedCaptionIcon, MicrophoneIcon } from "#/components/Icons/Icons";
 
 import styles from "./SearchResult.module.scss";
 
@@ -8,7 +8,11 @@ export type SearchResultProps = {
     image: string;
     type: string;
     nsfw?: boolean;
-    episodes: number;
+    episodes: {
+        subbed?: number;
+        dubbed?: number
+    };
+    // episodes: number;
 };
 
 export function SearchResult({ title, image, type, episodes, nsfw }: SearchResultProps) {
@@ -23,12 +27,22 @@ export function SearchResult({ title, image, type, episodes, nsfw }: SearchResul
                             {type}
                         </Typography>
                     </div>
-                    <div className={styles.tag}>
-                        <ClosedCaptionIcon />
-                        <Typography font="body" weight="normal" tag="h5">
-                            {episodes}
-                        </Typography>
-                    </div>
+                    {episodes.subbed && (
+                        <div className={styles.tag}>
+                            <ClosedCaptionIcon />
+                            <Typography font="body" weight="normal" tag="h5">
+                                {episodes.subbed}
+                            </Typography>
+                        </div>
+                    )}
+                    {episodes.dubbed && (
+                        <div className={styles.tag}>
+                            <MicrophoneIcon />
+                            <Typography font="body" weight="normal" tag="h5">
+                                {episodes.dubbed}
+                            </Typography>
+                        </div>
+                    )}
                     {nsfw && (
                         <div className={`${styles.tag} ${styles.tag_nsfw}`}>
                             {/* <ExclamationIcon /> */}
