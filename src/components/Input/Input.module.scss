@@ -5,13 +5,13 @@
     flex-direction: row;
     gap: 5px;
 
-    padding: 15px;
-
-    border-radius: 8px;
-    border: 1px solid var(--border-faint);
-    background-color: var(--input-background);
-
+    width: 100%;
+    
     transition: border-color 100ms ease-in-out;
+
+    &:focus-within {
+        border-color: var(--accent-color);
+    }
 
     input {
         width: 100%;
@@ -23,14 +23,10 @@
         font-family: var(--font-body);
         
         &::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--text-secondary);
         }
         &:focus-within {
             outline: none;
         }
-    }
-
-    &:focus-within {
-        border-color: var(--accent-color);
     }
 }

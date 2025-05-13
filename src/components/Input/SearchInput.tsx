@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 import { zoroSearch } from "#/util/api/consumet";
-import { SearchIcon } from "#/components/Icons/Icons";
+import { CloseIcon, SearchIcon } from "#/components/Icons/Icons";
 
 import { Input } from "./Input";
 import styles from "./SearchInput.module.scss";
@@ -11,6 +11,7 @@ export function SearchInput() {
     const ref = useRef<HTMLInputElement>(null);
 
     const [ results, setResults ] = useState<SearchResultProps[]>([]);
+    const [ searchHasValue, setSearchHasValue ] = useState(false);
 
     const handleSearch = useCallback(async () => {
         if (ref.current?.value === undefined) return;
@@ -46,6 +47,14 @@ export function SearchInput() {
         setResults(sortedResults);
     }, []);
 
+    const handleClear = useCallback(() => {
+        if (!ref.current) return;
+
+        ref.current.value = "";
+        setResults([]);
+        setSearchHasValue(false);
+    }, [results]);
+
     useEffect(() => {
         const controller = new AbortController();
         const signal = controller.signal;
@@ -59,6 +68,8 @@ export function SearchInput() {
                 clearTimeout(timeout);
             }
 
+            setSearchHasValue(input.value.length > 0);
+
             // @ts-ignore
             // Bun implements the standard, "number".
             timeout = setTimeout(handleSearch, 1_000);
@@ -68,18 +79,25 @@ export function SearchInput() {
             if (timeout) {
                 clearTimeout(timeout);
             }
+
+            setSearchHasValue(input.value.length > 0);
         }, { signal });
     }, []);
 
     return (<>
         <div className={styles.search_container}>
-            <Input
-                ref={ref}
-                className={styles.search_input}
-                placeholder="Search Anime"
-            >
+            <div className={styles.search_input}>
                 <SearchIcon />
-            </Input>
+                <Input
+                    ref={ref}
+                    placeholder="Search Anime"
+                />
+                {searchHasValue && (
+                    <div className={styles.clear_search} onClick={handleClear}>
+                        <CloseIcon width={10} height={10} />
+                    </div>
+                )}
+            </div>
             <div className={`${styles.search_content}${results.length > 0 ? ` ${styles.has_content}` : ''}`}>
                 {results
                     .map((result) => (
