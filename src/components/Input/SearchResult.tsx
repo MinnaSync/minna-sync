@@ -7,10 +7,11 @@ export type SearchResultProps = {
     title: string;
     image: string;
     type: string;
+    nsfw?: boolean;
     episodes: number;
 };
 
-export function SearchResult({ title, image, type, episodes }: SearchResultProps) {
+export function SearchResult({ title, image, type, episodes, nsfw }: SearchResultProps) {
     return (<>
         <div className={styles.search_result}>
             <img className={styles.image} src={image} />
@@ -28,6 +29,14 @@ export function SearchResult({ title, image, type, episodes }: SearchResultProps
                             {episodes}
                         </Typography>
                     </div>
+                    {nsfw && (
+                        <div className={`${styles.tag} ${styles.tag_nsfw}`}>
+                            {/* <ExclamationIcon /> */}
+                            <Typography font="body" weight="normal" tag="h5">
+                                NSFW
+                            </Typography>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

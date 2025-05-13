@@ -24,12 +24,23 @@ export function SearchInput() {
         const info = await zoroSearch(ref.current.value);
         if (info.isErr()) return;
 
-        setResults(info.value.results.map((r) => ({
-            title: r.title,
-            image: r.image,
-            type: r.type,
-            episodes: r.sub
-        })));
+        // Sorts the results by type.
+        // Most people are going to be wanting to watch TV first.
+        const sortedResults: SearchResultProps[] = [];
+        for (const type of ["TV", "OVA", "ONA", "Movie", "Special"]) {
+            const results = info.value.results.filter((r) => r.type === type);
+            if (results.length === 0) continue;
+
+            sortedResults.push(...results.map((r) => ({
+                title: r.title,
+                image: r.image,
+                type: r.type,
+                nsfw: r.nsfw,
+                episodes: r.sub
+            })));
+        }
+
+        setResults(sortedResults);
     }, []);
 
     useEffect(() => {
@@ -67,12 +78,14 @@ export function SearchInput() {
                 <SearchIcon />
             </Input>
             <div className={`${styles.search_content}${results.length > 0 ? ` ${styles.has_content}` : ''}`}>
-                {results.map((result) => (
-                    <SearchResult
-                        key={result.title}
-                        {...result}
-                    />
-                ))}
+                {results
+                    .map((result) => (
+                        <SearchResult
+                            key={result.title}
+                            {...result}
+                        />
+                    ))
+                }
             </div>
         </div>
     </>)

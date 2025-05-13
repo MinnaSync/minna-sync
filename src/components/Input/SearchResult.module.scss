@@ -26,6 +26,7 @@
     .tags {
         display: flex;
         flex-direction: row;
+        align-items: center;
         gap: 5px;
     }
 
@@ -37,5 +38,13 @@
         border-radius: 5px;
         border: 1px solid var(--border-faint);
         background-color: var(--modifier-background);
+        color: var(--text-secondary);
+        text-transform: uppercase;
+
+        &.tag_nsfw {
+            border: 1px solid color-mix(in srgb, var(--accent-red) 50%, var(--border-faint));
+            background-color: color-mix(in srgb, var(--accent-red) 10%, var(--modifier-background));
+            color: color-mix(in srgb, var(--accent-red) 15%, var(--text-secondary));
+        }
     }
 }
