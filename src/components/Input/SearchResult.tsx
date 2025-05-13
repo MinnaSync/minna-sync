@@ -27,7 +27,16 @@ export function SearchResult({ title, image, type, episodes, nsfw }: SearchResul
                             {type}
                         </Typography>
                     </div>
-                    {episodes.subbed !== 0 && (
+                    {episodes.subbed !== 0 && episodes.dubbed !== 0 && episodes.subbed == episodes.dubbed && (
+                        <div className={styles.tag}>
+                            <MicrophoneIcon />
+                            <ClosedCaptionIcon />
+                            <Typography font="body" weight="normal" tag="h5">
+                                {episodes.subbed}
+                            </Typography>
+                        </div>
+                    )}
+                    {episodes.subbed !== 0 && episodes.subbed !== episodes.dubbed && (
                         <div className={styles.tag}>
                             <ClosedCaptionIcon />
                             <Typography font="body" weight="normal" tag="h5">
@@ -35,7 +44,7 @@ export function SearchResult({ title, image, type, episodes, nsfw }: SearchResul
                             </Typography>
                         </div>
                     )}
-                    {episodes.dubbed !== 0 && (
+                    {episodes.dubbed !== 0 && episodes.subbed !== episodes.dubbed && (
                         <div className={styles.tag}>
                             <MicrophoneIcon />
                             <Typography font="body" weight="normal" tag="h5">
