@@ -15,6 +15,9 @@
 
     --font-header: 'Montserrat', Avenir, Helvetica, Arial, sans-serif;
     --font-body: 'Inter', Avenir, Helvetica, Arial, sans-serif;
+    --text-primary: hsl(0, 0%, 95%);
+    --text-secondary: hsl(0, 0%, 80%);
+    --text-grey: hsl(0, 0%, 25%);
 }
 
 html, body {
@@ -25,7 +28,7 @@ body {
     margin: 0;
     padding: 0;
 
-    color: white;
+    color: var(--text-primary);
     background-color: var(--app-background);
     font-family: var(--font-body);
 }

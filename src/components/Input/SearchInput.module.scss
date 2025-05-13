@@ -26,19 +26,19 @@
 
         border-radius: 8px;
 
-        border: 1px solid var(--border-faint);
-        box-shadow: 0 4px 15px black;
-        background-color: var(--popup-background);
-
         opacity: 0;
         pointer-events: none;
 
-        transition: opacity 100ms ease-in-out, top 100ms linear;
+        transition: all 150ms ease-in-out;
 
         &.has_content {
             opacity: 1;
             pointer-events: all;
             top: calc(100% + 5px);
+
+            border: 1px solid var(--border-faint);
+            box-shadow: 0 4px 15px black;
+            background-color: var(--popup-background);
         }
     }
 }
