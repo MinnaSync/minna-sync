@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useQuery } from "react-query";
 
 import { zoroSearch } from "#/util/api/consumet";
 import { CloseIcon, SearchIcon } from "#/components/Icons/Icons";
@@ -12,7 +13,12 @@ export function SearchInput() {
 
     const [ results, setResults ] = useState<SearchResultProps[]>([]);
     const [ searchHasValue, setSearchHasValue ] = useState(false);
+    const [ searchValue, setSearchValue ] = useState("");
     const [ isFocused, setIsFocused ] = useState(false);
+
+    const { data: search } = useQuery(["search", searchValue], () => {
+        return zoroSearch(searchValue);
+    }, { enabled: searchValue.length >= 3, staleTime: Infinity });
 
     const handleSearch = useCallback(async () => {
         if (inputRef.current?.value === undefined) return;
@@ -26,32 +32,7 @@ export function SearchInput() {
             return;
         };
 
-        const info = await zoroSearch(inputRef.current.value);
-        if (info.isErr()) return;
-
-        // Sorts the results by type.
-        // Most people are going to be wanting to watch TV first.
-        const sortedResults: SearchResultProps[] = [];
-        for (const type of ["TV", "OVA", "ONA", "Movie", "Special"]) {
-            const results = info.value.results.filter((r) => r.type === type);
-            if (results.length === 0) continue;
-
-            sortedResults.push(...
-                results.map(({ id, title, image, type, nsfw, sub, dub }) => ({
-                    id: id,
-                    title: title,
-                    image: image,
-                    type: type,
-                    nsfw: nsfw,
-                    episodes: {
-                        subbed: sub,
-                        dubbed: dub
-                    }
-                }))
-            );
-        }
-
-        setResults(sortedResults);
+        setSearchValue(query);
     }, []);
 
     const handleClear = useCallback(() => {
@@ -60,6 +41,7 @@ export function SearchInput() {
         inputRef.current.value = "";
         setResults([]);
         setSearchHasValue(false);
+        setSearchValue("");
     }, [results]);
 
     useEffect(() => {
@@ -97,6 +79,34 @@ export function SearchInput() {
             setIsFocused(false);
         }, { signal });
     }, []);
+
+    useEffect(() => {
+        if (!search || search.isErr()) return;
+
+        // Sorts the results by type.
+        // Most people are going to be wanting to watch TV first.
+        const sortedResults: SearchResultProps[] = [];
+        for (const type of ["TV", "OVA", "ONA", "Movie", "Special"]) {
+            const results = search.value.results.filter((r) => r.type === type);
+            if (results.length === 0) continue;
+
+            sortedResults.push(...
+                results.map(({ id, title, image, type, nsfw, sub, dub }) => ({
+                    id: id,
+                    title: title,
+                    image: image,
+                    type: type,
+                    nsfw: nsfw,
+                    episodes: {
+                        subbed: sub,
+                        dubbed: dub
+                    }
+                }))
+            );
+        }
+
+        setResults(sortedResults);
+    }, [search]);
 
     return (<>
         <div className={styles.search_container}>
