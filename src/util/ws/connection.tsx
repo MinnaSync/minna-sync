@@ -9,33 +9,47 @@ type EmitOptions = {
     queue?: boolean;
 }
 
-// import.meta.env.VITE_WSS_URL
-
 export class Websocket {
-    private readonly ws: WebSocket;
+    private url: string;
+    private ws: WebSocket | undefined;
+
+    public connected: boolean;
+    public reconnecting: boolean;
 
     public handlers: Map<string, (data: any) => void>;
     public queue: MessageEvent[];
 
+    private readonly controller: AbortController;
+    private readonly signal: AbortSignal;
+
     constructor(url: string) {
-        this.ws = new WebSocket(url);
+        this.url = url;
+        this.connected = false;
+        this.reconnecting = false;
         this.handlers = new Map();
         this.queue = [];
+
+        this.controller = new AbortController();
+        this.signal = this.controller.signal;
     }
 
     public connect() {
-        const controller = new AbortController();
-        const signal = controller.signal;
+        if (this.connected || this.ws?.readyState === WebSocket.OPEN) {
+            return this;
+        }
+
+        this.ws = new WebSocket(this.url);
 
         this.ws.addEventListener("open", () => {
-            console.log("Connected to websocket");
+            this.reconnecting = false;
+            this.connected = true;
 
             this.emit("connection", null, { queue: false });
 
             for (const { event, data } of this.queue) {
-                this.ws.send(JSON.stringify({ event, data }));
+                this.ws?.send(JSON.stringify({ event, data }));
             }
-        }, { signal });
+        }, { signal: this.signal });
 
         this.ws.addEventListener("message", ({ data }) => {
             console.log("Received message from websocket", data);
@@ -54,27 +68,46 @@ export class Websocket {
             }
 
             callback(result!.data);
-        }, { signal });
+        }, { signal: this.signal });
 
         this.ws.addEventListener("close", () => {
-            controller.abort();
-            
-            this.connect();
-        }, { signal });
+            this.connected = false;
+            this.reconnect();
+        }, { signal: this.signal });
 
         this.ws.addEventListener("error", () => {
-            this.ws.close();
-        }, { signal });
+            this.connected = false;
+        }, { signal: this.signal });
+
+        this.signal.addEventListener("abort", () => {
+            this.disconnect();;
+        }, { once: true });
 
         return this;
     }
 
-    public on(event: string, callback: (data: any) => void, opts?: { signal?: AbortSignal }) {
-        this.handlers.set(event, callback);
+    public reconnect(attempt: number = 0) {
+        const maxAttempts = 5;
+        if (attempt >= maxAttempts || this.connected || this.reconnecting) return;
 
-        if (opts?.signal) {
-            opts.signal.addEventListener("abort", () => this.off(event), { once: true });
-        }
+        attempt++;
+        this.connected = false;
+        this.reconnecting = true;
+
+        setTimeout(() => {
+            this.connect();
+        }, 1_000 * attempt);
+    }
+
+    public disconnect() {
+        this.ws?.close();
+
+        this.connected = false;
+        this.reconnecting = false;
+    }
+
+    public on(event: string, callback: (data: any) => void) {
+        this.handlers.set(event, callback);
     }
 
     public once(event: string, callback: (data: any) => void) {
@@ -89,13 +122,13 @@ export class Websocket {
     }
 
     public emit(event: string, data: any, options?: EmitOptions) {
-        if (this.ws.readyState !== this.ws.OPEN) {
+        if (this.ws?.readyState !== this.ws?.OPEN) {
             if (!options?.queue) return;
             this.queue.push({ event, data });
 
             return;
         }
 
-        this.ws.send(JSON.stringify({ event, data }));
+        this.ws?.send(JSON.stringify({ event, data }));
     }
 }
