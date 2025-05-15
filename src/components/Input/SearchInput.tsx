@@ -19,7 +19,10 @@ export function SearchInput() {
         
         const query = inputRef.current.value;
         if (query.length < 3) {
-            setResults([]);
+            if (results.length !== 0) {
+                setResults([]);
+            }
+
             return;
         };
 
