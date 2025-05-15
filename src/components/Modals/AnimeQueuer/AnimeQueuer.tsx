@@ -62,6 +62,7 @@ export function AnimeQueuer({ id, onClose }: AnimeQueuerProps) {
                     <div className={styles.episodes}>
                         {info?.episodes!.map((episode) => (
                             <Episode
+                                key={episode.id}
                                 zoroId={episode.id}
                                 title={episode.title}
                                 number={episode.number as number}
