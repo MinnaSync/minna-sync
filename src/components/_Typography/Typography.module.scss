@@ -1,0 +1,64 @@
+.display {
+    font-family: var(--font-header);
+}
+
+.heading {
+    font-family: var(--font-header);
+}
+
+.heading_italics {
+    font-family: var(--font-header);
+    font-style: italic;
+}
+
+.body {
+    font-family: var(--font-body);
+}
+
+.normal {
+    font-weight: normal;
+}
+
+.medium {
+    font-weight: 500;
+}
+
+.semi_bold {
+    font-weight: 600;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.extrabold {
+    font-weight: 800;
+}
+
+.xs {
+    font-size: 12px;
+}
+
+.sm {
+    font-size: 14px;
+}
+
+.md {
+    font-size: 17px;
+}
+
+.lg {
+    font-size: 24px;
+}
+
+.xl {
+    font-size: 29px;
+}
+
+.xxl {
+    font-size: 35px;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+    margin: 0;
+}

@@ -1,4 +1,5 @@
 import { errAsync, okAsync } from "neverthrow";
+import { IAnimeInfo, ISource, MediaFormat } from "@consumet/extensions";
 
 const BASE_URL = import.meta.env.VITE_CONSUMET_URL;
 
@@ -6,6 +7,7 @@ async function request<T>(
     method: string,
     path: string,
     query: Record<string, any> = {},
+    signal?: AbortSignal,
 ) {
     const url = new URL(path, BASE_URL);
 
@@ -17,7 +19,8 @@ async function request<T>(
         method,
         headers: {
             "Content-Type": "application/json",
-        }
+        },
+        signal,
     });
     
     if (!res.ok) {
@@ -32,17 +35,18 @@ async function request<T>(
 
 export async function zoroSearch(searchQuery: string, query?: { path?: string; }) {
     return await request<{
-        totalPages: number;
         currentPage: number;
         hasNextPage: boolean;
+        totalPages: number;
         results: Array<{
             id: string;
             title: string;
             url: string;
             image: string;
             duration: string;
+            watchList: string;
             japaneseTitle: string;
-            type: string;
+            type: MediaFormat;
             nsfw: boolean;
             sub: number;
             dub: number;
@@ -51,39 +55,34 @@ export async function zoroSearch(searchQuery: string, query?: { path?: string; }
     }>('GET', `/anime/zoro/${searchQuery}`, query);
 }
 
-export async function zoroInfo(query: { id: string; }) {
+export async function zoroInfo(query: { id: string; }, signal?: AbortSignal) { 
     return await request<{
         id: string;
         title: string;
-        url: string;
-        image: string;
-        releaseDate: string;
-        description: string;
-        genres: string[];
-        subOrDub: string;
-        type: string;
-        status: string;
-        otherName: string;
-        totalEpisodes: number;
+        malID: number;
+        alID: number;
         episodes: {
             id: string;
             number: number;
             url: string;
         }[]; 
-    }>('GET', `/anime/zoro/info`, query);
+        genres: string[];
+        url: string;
+        image: string;
+        releaseDate: string;
+        description: string;
+        subOrDub: string;
+        type: string;
+        status: string;
+        otherName: string;
+        totalEpisodes: number;
+    }>('GET', `/anime/zoro/info`, query, signal);
 }
 
-export async function zoroEpisode(episodeId: string, query?: { server?: "vidcloud" | "streamsb" | "vidstreaming" | "streamtape" | "vidcloud" }) {
-    return await request<{
-        headers: {
-            Referrer: string;
-            watchsb: string | null;
-            "User-Agent": string | null;
-        };
-        sources: Array<{
-            url: string;
-            quality: string;
-            isM3U8: boolean;
-        }>;
-    }>('GET', `/anime/zoro/watch/${episodeId}`, query);
+export async function zoroEpisode(episodeId: string, query?: { server?: "vidcloud" | "streamsb" | "vidstreaming" | "streamtape" | "vidcloud" }, signal?: AbortSignal) {
+    return await request<ISource>('GET', `/anime/zoro/watch/${episodeId}`, query, signal);
+}
+
+export async function anilistMeta(anilistId: number, query: { provider: string }, signal?: AbortSignal) {
+    return await request<IAnimeInfo>('GET', `/meta/anilist/info/${anilistId}`, query, signal);
 }
