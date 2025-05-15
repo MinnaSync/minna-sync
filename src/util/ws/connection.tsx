@@ -9,89 +9,93 @@ type EmitOptions = {
     queue?: boolean;
 }
 
-let ws: WebSocket;
-const handlers = new Map<string, (data: any) => void>();
-const queue: MessageEvent[] = [];
+// import.meta.env.VITE_WSS_URL
 
-function connect() {
-    ws = new WebSocket(import.meta.env.VITE_WSS_URL);
+export class Websocket {
+    private readonly ws: WebSocket;
 
-    const controller = new AbortController();
-    const signal = controller.signal;
+    public handlers: Map<string, (data: any) => void>;
+    public queue: MessageEvent[];
 
-    ws.addEventListener("open", () => {
-        console.log("Connected to websocket");
+    constructor(url: string) {
+        this.ws = new WebSocket(url);
+        this.handlers = new Map();
+        this.queue = [];
+    }
 
-        emit("connection", null, { queue: false });
+    public connect() {
+        const controller = new AbortController();
+        const signal = controller.signal;
 
-        for (const { event, data } of queue) {
-            ws.send(JSON.stringify({ event, data }));
+        this.ws.addEventListener("open", () => {
+            console.log("Connected to websocket");
+
+            this.emit("connection", null, { queue: false });
+
+            for (const { event, data } of this.queue) {
+                this.ws.send(JSON.stringify({ event, data }));
+            }
+        }, { signal });
+
+        this.ws.addEventListener("message", ({ data }) => {
+            console.log("Received message from websocket", data);
+
+            const { result, error } = tryCatch(() => JSON.parse(data) as MessageEvent);
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            const callback = this.handlers.get(result.event);
+            if (!callback) {
+                console.error(`No handler for event: ${result!.event}`);
+                return;
+            }
+
+            callback(result!.data);
+        }, { signal });
+
+        this.ws.addEventListener("close", () => {
+            controller.abort();
+            
+            this.connect();
+        }, { signal });
+
+        this.ws.addEventListener("error", () => {
+            this.ws.close();
+        }, { signal });
+
+        return this;
+    }
+
+    public on(event: string, callback: (data: any) => void, opts?: { signal?: AbortSignal }) {
+        this.handlers.set(event, callback);
+
+        if (opts?.signal) {
+            opts.signal.addEventListener("abort", () => this.off(event), { once: true });
         }
-    }, { signal });
+    }
 
-    ws.addEventListener("message", ({ data }) => {
-        console.log("Received message from websocket", data);
+    public once(event: string, callback: (data: any) => void) {
+        this.on(event, (data: any) => {
+            this.off(event);
+            callback(data);
+        });
+    }
 
-        const { result, error } = tryCatch(() => JSON.parse(data) as MessageEvent);
+    public off(event: string) {
+        this.handlers.delete(event);
+    }
 
-        if (error) {
-            console.error(error);
+    public emit(event: string, data: any, options?: EmitOptions) {
+        if (this.ws.readyState !== this.ws.OPEN) {
+            if (!options?.queue) return;
+            this.queue.push({ event, data });
+
             return;
         }
 
-        const callback = handlers.get(result.event);
-        if (!callback) {
-            console.error(`No handler for event: ${result!.event}`);
-            return;
-        }
-
-        callback(result!.data);
-    }, { signal });
-
-    ws.addEventListener("close", () => {
-        controller.abort();
-        
-        connect();
-    }, { signal });
-
-    ws.addEventListener("error", () => {
-        ws.close();
-    }, { signal });
-
-    return ws;
-}
-connect();
-
-function on(event: string, callback: (data: any) => void, opts?: { signal?: AbortSignal }) {
-    handlers.set(event, callback);
-
-    if (opts?.signal) {
-        opts.signal.addEventListener("abort", () => off(event), { once: true });
+        this.ws.send(JSON.stringify({ event, data }));
     }
 }
-
-function once(event: string, callback: (data: any) => void) {
-    on(event, (data: any) => {
-        off(event);
-        callback(data);
-    });
-}
-
-function off(event: string) {
-    handlers.delete(event);
-}
-
-function emit(event: string, data: any, options?: EmitOptions) {
-    if (ws.readyState !== ws.OPEN) {
-        if (!options?.queue) return;
-        queue.push({ event, data });
-
-        return;
-    }
-
-    ws.send(JSON.stringify({ event, data }));
-}
-
-export const websocket = {
-    on, once, off, emit
-};

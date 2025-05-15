@@ -21,3 +21,8 @@ export type UserJoinEvent = {
 export type UserLeftEvent = {
     username: string;
 };
+
+export type MediaUpdateEvent = {
+    title: string;
+    url: string;
+}

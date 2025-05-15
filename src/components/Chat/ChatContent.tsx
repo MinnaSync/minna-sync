@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, memo, Fragment } from "react";
 import { useParams } from "react-router";
-import { type websocket } from "#/util/ws/connection";
+
+import { useWebsocket } from "#/providers/WebsocketProvider";
 import { UserJoinEvent, UserLeftEvent, type UserMessageEvent } from "#/util/ws/types";
 
 import styles from "./ChatContent.module.scss";
@@ -10,12 +11,9 @@ import { Typography } from "#/components/Typography/Typography";
 import { EnterIcon, LeaveIcon } from "#/components/Icons/Icons";
 import { MessageInput } from "../Input/MessageInput";
 
-type ChatContentProps = {
-    websocket: React.RefObject<typeof websocket>;
-}
-
-export const ChatContent = memo((props: ChatContentProps) => {
+export const ChatContent = memo(() => {
     const channelId = useParams().channelId;
+    const websocket = useWebsocket();
     
     const chatContentRef = useRef<HTMLDivElement>(null);
     const messagesRef = useRef<HTMLOListElement>(null);
@@ -28,7 +26,7 @@ export const ChatContent = memo((props: ChatContentProps) => {
     )[]>([]);
 
     const sendMessage = (message: string) => {
-        props.websocket.current?.emit("send_message", {
+        websocket.emit("send_message", {
             message: message
         });
     }
@@ -72,9 +70,7 @@ export const ChatContent = memo((props: ChatContentProps) => {
         const controller = new AbortController();
         const signal = controller.signal;
 
-        const ws = props.websocket.current;
-
-        ws?.on("user_joined", (data: UserJoinEvent) => {
+        websocket.on("user_joined", (data: UserJoinEvent) => {
             setMessages((p) => [...p, {
                 type: 'notification',
                 icon: <EnterIcon />,
@@ -83,7 +79,7 @@ export const ChatContent = memo((props: ChatContentProps) => {
             }]);
         });
 
-        ws?.on("user_left", (data: UserLeftEvent) => {
+        websocket.on("user_left", (data: UserLeftEvent) => {
             setMessages((p) => [...p, {
                 type: 'notification',
                 icon: <LeaveIcon />,
@@ -92,7 +88,7 @@ export const ChatContent = memo((props: ChatContentProps) => {
             }]);
         });
 
-        ws?.on("receive_message", ({ username, message }: UserMessageEvent) => {
+        websocket.on("receive_message", ({ username, message }: UserMessageEvent) => {
             setMessages((p) => [...p, {
                 type: 'message',
                 username: username,
