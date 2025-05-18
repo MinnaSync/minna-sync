@@ -7,12 +7,14 @@ import '@vidstack/react/player/styles/default/layouts/video.css';
 
 import styles from "./VideoPlayer.module.scss";
 import { ControlGroup, PlayPauseButton, ToggleFullscreenButton } from './Controls';
+import { Typography } from '../Typography/Typography';
 
 type VideoPlayerProps = {
     ref: React.RefObject<MediaPlayerInstance | null>;
     src: string;
     time?: number;
     paused?: boolean;
+    nowPlaying: string | null;
     onReady?: () => void;
 };
 
@@ -30,7 +32,7 @@ const formatTime = (time: number) => {
     return `${hours}:${minutes}:${seconds}`;
 };
 
-export function VideoPlayer({ src, ref, time, paused, onReady }: VideoPlayerProps) {
+export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: VideoPlayerProps) {
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const timerRef = useRef<HTMLDivElement | null>(null);
     const progressRef = useRef<HTMLDivElement | null>(null);
@@ -148,6 +150,20 @@ export function VideoPlayer({ src, ref, time, paused, onReady }: VideoPlayerProp
 
     return (<>
         <div ref={wrapperRef} className={`${styles.video_player}${playerFocused ? ` ${styles.focused}` : ""}`}>
+            <div className={styles.header}>
+                {(nowPlaying && nowPlaying !== "")
+                    ? <>
+                        <Typography variant='heading' weight='medium' size='sm'>
+                            {nowPlaying}
+                        </Typography>
+                    </>
+                    : <>
+                        <Typography variant='heading' weight='medium' size='sm'>
+                            Nothing Playing
+                        </Typography>
+                    </>
+                }
+            </div>
             <MediaPlayer
                 // controls
                 crossOrigin
@@ -192,7 +208,11 @@ export function VideoPlayer({ src, ref, time, paused, onReady }: VideoPlayerProp
                         <div
                             ref={timerRef}
                             className={styles.timer}
-                        >00:00 / 00:00</div>
+                        >
+                            <Typography variant='body' weight='medium' size='sm'>
+                                00:00 / 00:00
+                            </Typography>
+                        </div>
                     </ControlGroup>
                     <ControlGroup>
                         <ToggleFullscreenButton

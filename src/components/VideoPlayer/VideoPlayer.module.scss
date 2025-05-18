@@ -18,9 +18,28 @@
 
     &.focused {
         cursor: default;
-        .controls {
+
+        .header, .controls {
             opacity: 1;
         }
+    }
+
+    .header {
+        z-index: 1;
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        top: 0;
+        left: 0;
+        right: 0;
+
+        padding: 15px;
+
+        opacity: 0;
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0) 5%, rgba(0, 0, 0, 0.25) 25%, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0.75) 100%);
+        transition: opacity 0.1s ease-in-out;
     }
 
     .controls {

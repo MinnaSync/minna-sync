@@ -23,6 +23,8 @@ export function Channel() {
     const [ src, setSrc ] = useState("");
     const [ time, setTime ] = useState(0);
     const [ paused, setPaused ] = useState(true);
+    const [ series, setSeries ] = useState<null | string>(null);
+    const [ title, setTitle ] = useState<null | string>(null);
     const suppressStatusUpdated = useRef(false);
 
     const handlePausePlay = useCallback((paused: boolean) => {
@@ -55,14 +57,20 @@ export function Channel() {
             setSrc(`http://localhost:8443/m3u8/${now_playing.url}`);
             setTime(now_playing.current_time);
             setPaused(now_playing.paused);
+            setSeries(now_playing.series);
+            setTitle(now_playing.title);
+
+            console.log(now_playing);
         });
 
-        websocket.on("media_changed", ({ url }: MediaUpdateEvent) => {
+        websocket.on("media_changed", ({ url, series, title }: MediaUpdateEvent) => {
             suppressStatusUpdated.current = true;
             
             setSrc(`http://localhost:8443/m3u8/${url}`);
             setTime(0);
             setPaused(false);
+            setSeries(series);
+            setTitle(title);
         });
 
         websocket.on("state_updated", ({ current_time, paused }: TimeUpdateEvent) => {
@@ -92,6 +100,9 @@ export function Channel() {
                     src={src}
                     time={time}
                     paused={paused}
+                    nowPlaying={series && title &&
+                        `${series} - ${title}`
+                    }
                     onReady={() => {
                         const controller = new AbortController();
                         const signal = controller.signal;

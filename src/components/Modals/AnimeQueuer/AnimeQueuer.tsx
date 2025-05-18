@@ -98,7 +98,7 @@ export function AnimeQueuer({ id, onClose }: AnimeQueuerProps) {
                             <Episode
                                 key={episode.id}
                                 id={episode.id}
-                                series={info.meta.title} // wtf is this
+                                series={info.meta.title}
                                 title={episode.title!}
                                 poster={info?.meta.poster!}
                                 number={episode.episode as number}
