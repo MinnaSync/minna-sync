@@ -1,14 +1,19 @@
-import { useRef, useState, useCallback, useEffect } from 'react';
-import { MediaPlayer, MediaPlayerInstance, MediaProvider, MediaProviderInstance, useStore } from '@vidstack/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { isHLSProvider, MediaPlayer, MediaPlayerInstance, MediaProvider, MediaProviderAdapter, MediaProviderChangeEvent, MediaProviderInstance, useMediaRemote, useStore } from '@vidstack/react';
+import HLS from 'hls.js';
 
 import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
 
 import styles from "./VideoPlayer.module.scss";
-import { PlayPauseButton, VolumeButton, ToggleFullscreenButton } from './ControlButton';
+import { ControlGroup, PlayPauseButton, ToggleFullscreenButton } from './Controls';
 
 type VideoPlayerProps = {
+    ref: React.RefObject<MediaPlayerInstance | null>;
     src: string;
+    time?: number;
+    paused?: boolean;
+    onReady?: () => void;
 };
 
 const formatTime = (time: number) => {
@@ -25,43 +30,46 @@ const formatTime = (time: number) => {
     return `${hours}:${minutes}:${seconds}`;
 };
 
-export function VideoPlayer({ src }: VideoPlayerProps) {
-    const playerRef = useRef<MediaPlayerInstance | null>(null);
-    useStore(MediaPlayerInstance, playerRef);
+export function VideoPlayer({ src, ref, time, paused, onReady }: VideoPlayerProps) {
+    const wrapperRef = useRef<HTMLDivElement | null>(null);
+    const timerRef = useRef<HTMLDivElement | null>(null);
+    const progressRef = useRef<HTMLDivElement | null>(null);
+    const progressBarRef = useRef<HTMLDivElement | null>(null);
 
+    const remote = useMediaRemote(ref.current)
     const providerRef = useRef<MediaProviderInstance | null>(null);
     useStore(MediaProviderInstance, providerRef);
 
-    const wrapperRef = useRef<HTMLDivElement | null>(null);
-    const progressRef = useRef<HTMLDivElement | null>(null);
-    const seekingContainerRef = useRef<HTMLDivElement | null>(null);
-    // const seekingTooltipRef = useRef<HTMLDivElement | null>(null);
-    const progressBarRef = useRef<HTMLDivElement | null>(null);
-    const timerRef = useRef<HTMLDivElement | null>(null);
+    const [ playerFocused, setPlayerFocused ] = useState(false);
+    const [ isPaused, setIsPaused ] = useState(false);
 
-    const [ isPaused, setIsPaused ] = useState(true);
-    const [ isEnded, setIsEnded ] = useState(false);
-    const [ isSeeking, setIsSeeking ] = useState(false);
-    const [ playerHovered, setPlayerHovered ] = useState(false);
-    const [ volume, setVolume ] = useState(25);
-    // const [ isMuted, setMuted ] = useState(false);
-    
-    const handlePausePlay = useCallback(async () => {
-        if (!playerRef.current || !playerRef.current.state.canPlay) return;
-        playerRef.current.paused
-            ? await playerRef.current.play()
-            : playerRef.current.pause();
+    const onProviderChange = useCallback((provider: MediaProviderAdapter | null, _: MediaProviderChangeEvent) => {
+        if (!isHLSProvider(provider)) return;
+
+        /**
+         * Newer versions of hls.js are broken with providers like animepahe.
+         * This is because, for example, animepahe uses .jpg instead of .ts for segments.
+         * Why? I don't know, nor do I really care. Basically, dont upgrade hls.js for your own sanity.
+         * 
+         * For some reason, the older hls.js versions do work, so, whatever I guess!
+         */
+        provider.library = HLS;
     }, []);
 
-    const handleTimeUpdate = useCallback(() => {
-        if (!progressBarRef.current || !playerRef.current || !timerRef.current) return;
-
-        progressBarRef.current.style.width = `${playerRef.current.currentTime / playerRef.current.duration * 100}%`;
-        timerRef.current.textContent = `${formatTime(playerRef.current.currentTime)} / ${formatTime(playerRef.current.duration)}`;
+    const handlePausePlay = useCallback(() => {
+        remote.togglePaused();
+        setIsPaused((p) => !p);
     }, []);
 
-    const handleProgressUpdate = useCallback((e: MouseEvent | TouchEvent) => {
-        if (!progressRef.current || !playerRef.current) return;
+    const handleTimerUpdate = useCallback(() => {
+        if (!ref.current || !progressBarRef.current || !timerRef.current) return;
+
+        progressBarRef.current.style.width = `${ref.current.currentTime / ref.current.duration * 100}%`;
+        timerRef.current.textContent = `${formatTime(ref.current.currentTime)} / ${formatTime(ref.current.duration)}`;
+    }, []);
+
+    const handleSeekingUpdate = useCallback((e: MouseEvent | TouchEvent) => {
+        if (!progressRef.current || !ref.current) return;
 
         const rect = progressRef.current.getBoundingClientRect();
 
@@ -74,119 +82,61 @@ export function VideoPlayer({ src }: VideoPlayerProps) {
         }
 
         const percentage = (clickX / rect.width) * 100;
-        playerRef.current.currentTime = playerRef.current.duration * percentage / 100;
-        handleTimeUpdate();
-    }, []);
 
-    const handleVolumeSet = useCallback((value: number) => {
-        if (!playerRef.current) return;
-
-        if (playerRef.current.muted) {
-            playerRef.current.muted = false;
-        }
-
-        setVolume(Math.max(0, Math.min(100, value)));
-        const volume = Math.min(1, Math.max(0, value / 100));
-        playerRef.current.volume = volume;
-    }, []);
-
-    const handleVolumeAdjust = useCallback((amount: number) => {
-        if (!playerRef.current) return;
-        handleVolumeSet((playerRef.current.volume + amount) * 100);
+        remote.seek(ref.current.duration * percentage / 100);
+        handleTimerUpdate();
     }, []);
 
     useEffect(() => {
         let seeking = false;
-        let seekingPaused = false;
-        let keybindDebounce = false;
-        let playerFocused = false;
-        let hideControlsTimeout: number | null = null;
+        let displayControlsTimeout: number | null = null;
 
         const controller = new AbortController();
         const signal = controller.signal;
-
+        
+        const player = ref.current;
         const provider = providerRef.current;
-        const player = playerRef.current;
-        const progress = progressRef.current;
         const wrapper = wrapperRef.current;
+        const progress = progressRef.current;
 
-        const handleStartSeeking = () => {
-            if (!player) return;
-
-            seeking = true;
-            seekingPaused = !player.paused;
-            
-            setIsSeeking(seeking);
-
-            player?.pause();
-        }
-
-        const handleSeeking = (e: MouseEvent | TouchEvent) => {
-            if (!player || !seeking) return;
-            handleProgressUpdate(e);
-        };
-
-        const handleStopSeeking = async () => {
-            if (!player || !seeking) return;
-
-            if (seekingPaused) {
-                await player.play();
+        const handleControlsDisplay = () => {
+            if (displayControlsTimeout) {
+                clearTimeout(displayControlsTimeout);
             }
 
-            seeking = false;
-            seekingPaused = false;
-
-            setIsSeeking(seeking);
-        };
-
-        const handleSeekTime = (time: number) => {
-            if (!player) return;
-
-            player.currentTime += time;
-            handleTimeUpdate();
-        };
-
-        const handleControlsShow = () => {
-            if (hideControlsTimeout) {
-                clearTimeout(hideControlsTimeout);
-            }
-
-            if (!playerHovered) {
-                setPlayerHovered(true);
+            if (!playerFocused) {
+                setPlayerFocused(true);
             }
 
             // @ts-ignore
             // Bun uses the web standard, "number".
-            hideControlsTimeout = setTimeout(() => {
-                setPlayerHovered(false);
+            displayControlsTimeout = setTimeout(() => {
+                setPlayerFocused(false);
             }, 2_500);
+        };
+
+        const handleSeeking = (e: MouseEvent | TouchEvent) => {
+            if (!player || !seeking) return;
+            handleSeekingUpdate(e);
+        };
+
+        const handleStartSeeking = () => {
+            if (!player) return;
+            seeking = true;
+        }
+
+        const handleStopSeeking = async () => {
+            if (!player || !seeking) return;
+            seeking = false;
         };
 
         provider?.addEventListener("click", handlePausePlay, { signal });
 
-        // Keeps track of pausing/playing state for the icon.
-        player?.addEventListener("playing", () => setIsPaused(false), { signal });
-        player?.addEventListener("pause", () => setIsPaused(true), { signal });
+        wrapper?.addEventListener("mouseenter", handleControlsDisplay, { signal });
+        wrapper?.addEventListener("mousemove", handleControlsDisplay, { signal });
+        wrapper?.addEventListener("touchstart", handleControlsDisplay, { signal });
 
-        // Handles hovering on the player.
-        wrapper?.addEventListener("mouseenter", handleControlsShow, { signal });
-        wrapper?.addEventListener("mousemove", handleControlsShow, { signal });
-        wrapper?.addEventListener("touchstart", handleControlsShow, { signal });
-
-        // Sets the state of the player.
-        player?.addEventListener("loadeddata", () => player.volume = volume / 100, { once: true, signal });
-        progress?.addEventListener("click", handleProgressUpdate, { signal });
-        player?.addEventListener("playing", () => setIsPaused(false), { signal });
-        player?.addEventListener("pause", () => setIsPaused(true), { signal });
-        player?.addEventListener("waiting", () => setIsEnded(false), { signal });
-        player?.addEventListener("ended", () => setIsEnded(true), { signal });
-        player?.addEventListener("seeked", () => {
-            if (player.currentTime < player.duration) {
-                setIsEnded(false);
-            }
-        }, { signal });
-
-        // Progress has to have the mousedown event to trigger seeking.
+        progress?.addEventListener("click", (e) => handleSeekingUpdate(e), { signal });
         progress?.addEventListener("mousedown", handleStartSeeking, { signal });
         document.addEventListener("mousemove", handleSeeking, { signal });
         document.addEventListener("mouseup", handleStopSeeking, { signal });
@@ -194,110 +144,64 @@ export function VideoPlayer({ src }: VideoPlayerProps) {
         progress?.addEventListener("touchstart", handleStartSeeking, { signal });
         document.addEventListener("touchmove", handleSeeking, { signal });
         document.addEventListener("touchend", handleStopSeeking, { signal });
-
-        // If the video is focused, enabled keybind events for the player.
-        wrapper?.addEventListener("mouseenter", () => playerFocused = true, { signal });
-        wrapper?.addEventListener("mouseleave", () => playerFocused = false, { signal });
-        document.addEventListener("keydown", (e) => {
-            if (keybindDebounce || !playerFocused) return;
-            handleControlsShow();
-
-            switch (e.code) {
-                case "Space": 
-                    e.preventDefault();
-                    handlePausePlay();
-                    break;
-                case "KeyM":
-                    // handleMuteVolume();
-                    break;
-                case "ArrowUp":
-                    handleVolumeAdjust(0.1);
-                    break;
-                case "ArrowDown":
-                    handleVolumeAdjust(-0.1);
-                    break;
-                case "ArrowRight":
-                    if (e.shiftKey) {
-                        handleSeekTime(30);
-                    }
-                    else if (e.ctrlKey) {
-                        handleSeekTime(1);
-                    }
-                    else {
-                        handleSeekTime(10);
-                    }
-
-                    break;
-                case "ArrowLeft":
-                    if (e.shiftKey) {
-                        handleSeekTime(-30);
-                    }
-                    else if (e.ctrlKey) {
-                        handleSeekTime(-1);
-                    }
-                    else {
-                        handleSeekTime(-5);
-                    }
-
-                    break;
-                default:
-                    break;
-            }
-
-            keybindDebounce = true;
-            setTimeout(() => keybindDebounce = false, 100);
-        }, { signal });
-
-        return () => controller.abort();
     }, []);
 
     return (<>
-        <div ref={wrapperRef} className={`${styles.video_player}${playerHovered ? ` ${styles.focused}` : ""}`}>
+        <div ref={wrapperRef} className={`${styles.video_player}${playerFocused ? ` ${styles.focused}` : ""}`}>
             <MediaPlayer
-                ref={playerRef} className={styles.player} src={src}
-                onTimeUpdate={handleTimeUpdate}
-                onVolumeChange={(e) => handleVolumeSet(e.volume * 100)}
+                // controls
+                crossOrigin
+                aspectRatio="16/9"
+                preload="metadata"
+                load="eager"
+                streamType="on-demand"
+                viewType="video"
+                ref={ref}
+                className={styles.player} src={src}
+                onTimeUpdate={handleTimerUpdate}
+                onProviderChange={onProviderChange}
+                onLoadedMetadata={() => {
+                    if (time !== undefined)
+                        remote.seek(time);
+
+                    if (paused !== undefined) {
+                        paused
+                            ? remote.pause()
+                            : remote.play();
+
+                        setIsPaused(paused);
+                    }
+                }}
+                onCanPlay={onReady}
             >
-                <div className={styles.controls}>
-                    <div ref={progressRef} className={`${styles.progress}${isSeeking ? ` ${styles.seeking}` : ""}`}>
-                        <div ref={seekingContainerRef} className={styles.timer_seeking}>
-                            {/* <div
-                                ref={seekingTooltipRef}
-                                className={styles.timer_tooltip}
-                            >00:00</div> */}
-                        </div>
-                        <div
-                            ref={progressBarRef}
-                            className={styles.progress_bar}
-                        />
-                    </div>
-                    <div className={styles.buttons}>
-                        <div className={styles.control_group}>
-                            <PlayPauseButton
-                                paused={isPaused}
-                                ended={isEnded}
-                                handlePausePlay={handlePausePlay}
-                            />
-                            <VolumeButton
-                                volume={Math.round(volume)}
-                                muted={false}
-                                handleMuteVolume={() => {}}
-                                handleVolumeChange={handleVolumeSet}
-                            />
-                            <div
-                                ref={timerRef}
-                                className={styles.timer}
-                            >00:00 / 00:00</div>
-                        </div>
-                        <div className={styles.control_group}>
-                            <ToggleFullscreenButton
-                                wrapper={wrapperRef.current!}
-                            />
-                        </div>
-                    </div>
-                </div>
-                <MediaProvider ref={providerRef} />
+                <MediaProvider ref={providerRef}>
+                </MediaProvider>
             </MediaPlayer>
+            <div className={styles.controls}>
+                <div ref={progressRef} className={styles.progress}>
+                    <div ref={progressBarRef} className={styles.bar} />
+                </div>
+                <div className={styles.buttons}>
+                    <ControlGroup>
+                        <PlayPauseButton
+                            paused={isPaused}
+                            ended={false}
+                            handlePausePlay={handlePausePlay}
+                        >
+                        </PlayPauseButton>
+                        <div
+                            ref={timerRef}
+                            className={styles.timer}
+                        >00:00 / 00:00</div>
+                    </ControlGroup>
+                    <ControlGroup>
+                        <ToggleFullscreenButton
+                            wrapper={wrapperRef.current!}
+                        >
+                        </ToggleFullscreenButton>
+                    </ControlGroup>
+                </div>
+            </div>
         </div>
     </>)
 }
