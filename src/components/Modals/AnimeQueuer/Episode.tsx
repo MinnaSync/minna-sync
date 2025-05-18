@@ -52,7 +52,7 @@ export function Episode({ id, series, title, poster, number, thumbnail }: Episod
             <div className={styles.thumbnail}>
                 <img src={thumbnail} />
                 <div className={styles.episode_number}>
-                    <Typography variant="heading" size="md" weight="bold">
+                    <Typography variant="heading" size="sm" weight="bold">
                         EP {number}
                     </Typography>
                 </div>
