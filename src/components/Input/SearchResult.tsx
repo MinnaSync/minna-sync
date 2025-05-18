@@ -12,7 +12,7 @@ export type SearchResultProps = {
     image: string;
     type: string;
     nsfw?: boolean;
-    episodes: {
+    episodes?: {
         subbed?: number;
         dubbed?: number
     };
@@ -40,7 +40,7 @@ export const SearchResult = memo(({ id, title, image, type, episodes, nsfw }: Se
                             {type}
                         </Typography>
                     </div>
-                    {episodes.subbed !== 0 && episodes.dubbed !== 0 && episodes.subbed == episodes.dubbed && (
+                    {episodes && episodes.subbed !== 0 && episodes.dubbed !== 0 && episodes.subbed == episodes.dubbed && (
                         <div className={styles.tag}>
                             <MicrophoneIcon />
                             <ClosedCaptionIcon />
@@ -49,7 +49,7 @@ export const SearchResult = memo(({ id, title, image, type, episodes, nsfw }: Se
                             </Typography>
                         </div>
                     )}
-                    {episodes.dubbed !== 0 && episodes.subbed !== episodes.dubbed && (
+                    {episodes && episodes.dubbed !== 0 && episodes.subbed !== episodes.dubbed && (
                         <div className={styles.tag}>
                             <MicrophoneIcon />
                             <Typography font="body" weight="normal" tag="h5">
@@ -57,7 +57,7 @@ export const SearchResult = memo(({ id, title, image, type, episodes, nsfw }: Se
                             </Typography>
                         </div>
                     )}
-                    {episodes.subbed !== 0 && episodes.subbed !== episodes.dubbed && (
+                    {episodes && episodes.subbed !== 0 && episodes.subbed !== episodes.dubbed && (
                         <div className={styles.tag}>
                             <ClosedCaptionIcon />
                             <Typography font="body" weight="normal" tag="h5">

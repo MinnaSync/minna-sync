@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery } from "react-query";
 
-import { zoroSearch } from "#/util/api/consumet";
 import { CloseIcon, SearchIcon } from "#/components/Icons/Icons";
 
 import { Input } from "./Input";
 import styles from "./SearchInput.module.scss";
 import { SearchResult, SearchResultProps } from "./SearchResult";
+import neptune from "#/util/api/neptune";
 
 export function SearchInput() {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -17,7 +17,7 @@ export function SearchInput() {
     const [ isFocused, setIsFocused ] = useState(false);
 
     const { data: search } = useQuery(["search", searchValue], () => {
-        return zoroSearch(searchValue);
+        return neptune.search(searchValue, { provider: "animepahe" });
     }, { enabled: searchValue.length >= 3, staleTime: Infinity });
 
     const handleSearch = useCallback(async () => {
@@ -91,16 +91,11 @@ export function SearchInput() {
             if (results.length === 0) continue;
 
             sortedResults.push(...
-                results.map(({ id, title, image, type, nsfw, sub, dub }) => ({
+                results.map(({ id, title, poster, type}) => ({
                     id: id,
                     title: title,
-                    image: image,
+                    image: `http://localhost:8443/proxied/${poster}`,
                     type: type,
-                    nsfw: nsfw,
-                    episodes: {
-                        subbed: sub,
-                        dubbed: dub
-                    }
                 }))
             );
         }

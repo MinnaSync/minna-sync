@@ -1,11 +1,11 @@
 import { useQuery } from "react-query";
 import { Modal } from "#/portals/Modals/Modal";
 
+import neptune from "#/util/api/neptune";
 import { Typography } from "#/components/_Typography/Typography";
 import { Skeleton } from "#/components/Skeleton/Skeleton";
-import { anilistMeta, zoroInfo } from "#/util/api/consumet";
 
-import { Episode } from "./Episode";
+import { Episode } from "./Episode"; 
 import styles from "./AnimeQueuer.module.scss";
 
 type AnimeQueuerProps = {
@@ -15,14 +15,10 @@ type AnimeQueuerProps = {
 
 export function AnimeQueuer({ id, onClose }: AnimeQueuerProps) {
     const { data: info, isLoading } = useQuery(["info", id], () => {
-        return zoroInfo({ id }).then(async (info) => {
-            if (info.isErr() || !info.value.alID) return;
-
-            const anilistInfo = await anilistMeta(info.value.alID, { provider: "zoro" });
-            if (anilistInfo.isErr()) return;
-
-            return anilistInfo.value;
-        });
+        return neptune.info({ id, provider: "animepahe", resource: "anilist" })
+            .then((r) => {
+                if (r?.isOk()) return r.value;
+            });
     }, { staleTime: Infinity });
 
     return (<>
@@ -30,32 +26,32 @@ export function AnimeQueuer({ id, onClose }: AnimeQueuerProps) {
             <div
                 className={styles.anime_queuer}
                 style={{ 
-                    "--accent-color": (!isLoading && info?.color) || "var(--accent-primary)",
+                    "--accent-color": (!isLoading && info?.meta.color) || "var(--accent-primary)",
                 } as React.CSSProperties}
             >{!isLoading
                 ? <>
                     <div className={styles.cover}>
-                        {info?.cover && <img src={info.cover} />}
+                        {info?.meta.background && <img src={info.meta.background} />}
                     </div>
                     <div className={styles.info}>
-                        <img className={styles.poster} src={info?.image} />
+                        <img className={styles.poster} src={info?.meta.poster!} />
                         <div className={styles.details}>
-                            <div className={styles.title}>{typeof info?.title === "string"
+                            <div className={styles.title}>{typeof info?.meta.title === "string"
                                 ? <Typography variant="heading" size="lg" weight="bold">
-                                    {info.title}
+                                    {info?.meta.title}
                                 </Typography>
                                 : <>
-                                <Typography variant="heading" size="lg" weight="bold">
+                                {/* <Typography variant="heading" size="lg" weight="bold">
                                     {info?.title.english}
                                 </Typography>
                                 <Typography variant="heading_italics" size="md" weight="bold">
                                     {info?.title.romaji} ({info?.title.native})
-                                </Typography>
+                                </Typography> */}
                                 </>
                             }</div>
                             <div className={styles.description}>
                                 {/* TODO: parse description (line breaks, itallics, bold, etc). */}
-                                {info?.description}
+                                {info?.meta?.description}
                             </div>
                         </div>
                     </div>
@@ -63,10 +59,12 @@ export function AnimeQueuer({ id, onClose }: AnimeQueuerProps) {
                         {info?.episodes!.map((episode) => (
                             <Episode
                                 key={episode.id}
-                                zoroId={episode.id}
-                                title={episode.title}
-                                number={episode.number as number}
-                                thumbnail={episode.image}
+                                id={episode.id}
+                                series={info.meta.title} // wtf is this
+                                title={episode.title!}
+                                poster={info?.meta.poster!}
+                                number={episode.episode as number}
+                                thumbnail={`http://localhost:8443/proxied/${episode.preview}`}
                             />
                         ))}
                     </div>

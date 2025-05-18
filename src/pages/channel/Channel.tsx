@@ -1,30 +1,84 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "react-router";
 
-import { MediaUpdateEvent } from "#/util/ws/types";
+import { MediaUpdateEvent, RoomDataEvent, TimeUpdateEvent } from "#/util/ws/types";
 
 import { Header } from "#/components/Header/Header";
 import { ChatContent } from "#/components/Chat/ChatContent";
-import { VideoPlayer } from "#/components/VIdeoPlayer/VideoPlayer";
+import { VideoPlayer } from "#/components/VideoPlayer/VideoPlayer";
 import { SearchInput } from "#/components/Input/SearchInput";
 
-import styles from "./Channel.module.scss"
 import { useWebsocket } from "#/providers/WebsocketProvider";
 
+import styles from "./Channel.module.scss"
+import { MediaPlayerInstance, useStore } from "@vidstack/react";
+
 export function Channel() {
+    const playerRef = useRef<MediaPlayerInstance | null>(null);
+    useStore(MediaPlayerInstance, playerRef);
+
     const channelId = useParams().channelId;
     const websocket = useWebsocket();
 
     const [ src, setSrc ] = useState("");
+    const [ time, setTime ] = useState(0);
+    const [ paused, setPaused ] = useState(true);
+    const suppressStatusUpdated = useRef(false);
+
+    const handlePausePlay = useCallback((paused: boolean) => {
+        if (suppressStatusUpdated.current) {
+            suppressStatusUpdated.current = false;
+            return;
+        }
+
+        websocket.emit("player_state", { paused });
+    }, []);
+
+    const handleTimeUpdate = useCallback((time: number) => {
+        if (suppressStatusUpdated.current) {
+            suppressStatusUpdated.current = false;
+            return;
+        }
+
+        websocket.emit("player_state", { current_time: time });
+    }, []);
 
     useEffect(() => {
         websocket.on("connected", () => {
             websocket.emit("join_room", channelId);
         });
 
-        websocket.on("media_update", ({ url }: MediaUpdateEvent) => {
-            setSrc(`http://localhost:8443/proxied/${url}`);
-        })
+        websocket.on("room_data", ({ now_playing }: RoomDataEvent) => {
+            if (!now_playing || !playerRef.current) return;
+            suppressStatusUpdated.current = true;
+
+            setSrc(`http://localhost:8443/m3u8/${now_playing.url}`);
+            setTime(now_playing.current_time);
+            setPaused(now_playing.paused);
+        });
+
+        websocket.on("media_changed", ({ url }: MediaUpdateEvent) => {
+            suppressStatusUpdated.current = true;
+            
+            setSrc(`http://localhost:8443/m3u8/${url}`);
+            setTime(0);
+            setPaused(false);
+        });
+
+        websocket.on("state_updated", ({ current_time, paused }: TimeUpdateEvent) => {
+            if (!playerRef.current) return;
+
+            suppressStatusUpdated.current = true;
+
+            const playerTime = playerRef.current.currentTime;
+            if (Math.abs(playerTime - current_time) > 1) {
+                playerRef.current.currentTime = current_time;
+            };
+
+            if (playerRef.current.paused !== paused) {
+                playerRef.current.paused = paused;
+            }
+        });
     }, []);
 
     return (<>
@@ -34,7 +88,23 @@ export function Channel() {
             </Header>
             <div className={styles.page_contents}>
                 <VideoPlayer
+                    ref={playerRef}
                     src={src}
+                    time={time}
+                    paused={paused}
+                    onReady={() => {
+                        const controller = new AbortController();
+                        const signal = controller.signal;
+
+                        const player = playerRef.current!;
+
+                        player?.addEventListener("playing", () => handlePausePlay(false), { signal });
+                        player?.addEventListener("pause", () => handlePausePlay(true), { signal });
+
+                        player?.addEventListener("seeked", () => handleTimeUpdate(player.currentTime), { signal });
+
+                        return () => controller.abort();
+                    }}
                 />
                 <ChatContent />
             </div>
