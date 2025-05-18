@@ -6,7 +6,7 @@ import { MediaUpdateEvent, RoomDataEvent, TimeUpdateEvent } from "#/util/ws/type
 import { Header } from "#/components/Header/Header";
 import { ChatContent } from "#/components/Chat/ChatContent";
 import { VideoPlayer } from "#/components/VideoPlayer/VideoPlayer";
-import { SearchInput } from "#/components/Input/SearchInput";
+import { SearchInput } from "#/components/Input//Search/SearchInput";
 
 import { useWebsocket } from "#/providers/WebsocketProvider";
 

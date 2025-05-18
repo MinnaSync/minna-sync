@@ -3,7 +3,7 @@ import { useQuery } from "react-query";
 
 import { CloseIcon, SearchIcon } from "#/components/Icons/Icons";
 
-import { Input } from "./Input";
+import { Input } from "../Input";
 import styles from "./SearchInput.module.scss";
 import { SearchResult, SearchResultProps } from "./SearchResult";
 import neptune from "#/util/api/neptune";

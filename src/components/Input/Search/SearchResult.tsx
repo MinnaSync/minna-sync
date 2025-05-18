@@ -4,7 +4,7 @@ import { Typography } from "#/components/Typography/Typography";
 import { ClosedCaptionIcon, MicrophoneIcon } from "#/components/Icons/Icons";
 
 import styles from "./SearchResult.module.scss";
-import { AnimeQueuer } from "../Modals/AnimeQueuer/AnimeQueuer";
+import { AnimeQueuer } from "#/components/Modals/AnimeQueuer/AnimeQueuer";
 
 export type SearchResultProps = {
     id: string;
