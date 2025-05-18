@@ -67,9 +67,6 @@ export const ChatContent = memo(() => {
     }, [messages]);
 
     useEffect(() => {
-        const controller = new AbortController();
-        const signal = controller.signal;
-
         websocket.on("user_joined", (data: UserJoinEvent) => {
             setMessages((p) => [...p, {
                 type: 'notification',
@@ -94,9 +91,13 @@ export const ChatContent = memo(() => {
                 username: username,
                 message: message
             }]);
-        }, { signal });
+        });
 
-        return () => controller.abort();
+        return () => {
+            websocket.off("user_joined");
+            websocket.off("user_left");
+            websocket.off("receive_message");
+        };
     }, []);
     
     return (<>
