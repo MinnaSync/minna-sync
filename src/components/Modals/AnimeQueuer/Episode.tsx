@@ -2,7 +2,7 @@ import { useCallback, useEffect } from "react";
 import { useQuery } from "react-query";
 
 import { useWebsocket } from "#/providers/WebsocketProvider";
-import { Typography } from "#/components/_Typography/Typography";
+import { Typography } from "#/components/Typography/Typography";
 import styles from "./Episode.module.scss";
 import neptune from "#/util/api/neptune";
 

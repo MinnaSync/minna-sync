@@ -33,10 +33,10 @@ export const SearchResult = memo(({ id, title, image, type, episodes, nsfw }: Se
         <div className={styles.search_result} onClick={handleClick}>
             <img className={styles.image} src={image} />
             <div className={styles.anime_info}>
-                <Typography font="header" weight="bold" tag="h5">{title}</Typography>
+                <Typography tag="h5" variant="heading" weight="bold" size="sm">{title}</Typography>
                 <div className={styles.tags}>
                     <div className={styles.tag}>
-                        <Typography font="body" weight="normal" tag="h5">
+                        <Typography tag="h5" size="xs">
                             {type}
                         </Typography>
                     </div>
@@ -44,7 +44,7 @@ export const SearchResult = memo(({ id, title, image, type, episodes, nsfw }: Se
                         <div className={styles.tag}>
                             <MicrophoneIcon />
                             <ClosedCaptionIcon />
-                            <Typography font="body" weight="normal" tag="h5">
+                            <Typography tag="h5" size="xs">
                                 {episodes.subbed}
                             </Typography>
                         </div>
@@ -52,7 +52,7 @@ export const SearchResult = memo(({ id, title, image, type, episodes, nsfw }: Se
                     {episodes && episodes.dubbed !== 0 && episodes.subbed !== episodes.dubbed && (
                         <div className={styles.tag}>
                             <MicrophoneIcon />
-                            <Typography font="body" weight="normal" tag="h5">
+                            <Typography tag="h5" size="xs">
                                 {episodes.dubbed}
                             </Typography>
                         </div>
@@ -60,14 +60,14 @@ export const SearchResult = memo(({ id, title, image, type, episodes, nsfw }: Se
                     {episodes && episodes.subbed !== 0 && episodes.subbed !== episodes.dubbed && (
                         <div className={styles.tag}>
                             <ClosedCaptionIcon />
-                            <Typography font="body" weight="normal" tag="h5">
+                            <Typography tag="h5" size="xs">
                                 {episodes.subbed}
                             </Typography>
                         </div>
                     )}
                     {nsfw && (
                         <div className={`${styles.tag} ${styles.tag_nsfw}`}>
-                            <Typography font="body" weight="normal" tag="h5">
+                            <Typography tag="h5" size="xs">
                                 NSFW
                             </Typography>
                         </div>

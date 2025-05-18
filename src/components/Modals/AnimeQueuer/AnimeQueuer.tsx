@@ -2,7 +2,7 @@ import { useQuery } from "react-query";
 import { Modal } from "#/portals/Modals/Modal";
 
 import neptune from "#/util/api/neptune";
-import { Typography } from "#/components/_Typography/Typography";
+import { Typography } from "#/components/Typography/Typography";
 import { Skeleton } from "#/components/Skeleton/Skeleton";
 
 import { Episode } from "./Episode"; 

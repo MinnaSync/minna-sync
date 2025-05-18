@@ -3,15 +3,16 @@ import styles from './Typography.module.scss';
 
 type TypographyProps = {
     tag?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span';
-    font?: 'header' | 'body';
-    weight?: 'bolder' | 'bold' | 'medium' | 'normal' | 'lighter';
+    variant?: 'display' | 'heading' | 'body' | 'heading_italics';
+    weight?: 'normal' | 'medium' | 'semi_bold' | 'bold' | 'extrabold';
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
     children: React.ReactNode;
 };
 
-export const Typography = memo(({ tag = 'p', font = 'body', weight = 'normal', children }: TypographyProps) => {
+export const Typography = memo(({ tag = 'p', variant = 'body', weight = 'normal', size = 'md', children }: TypographyProps) => {
     return createElement(
         tag,
-        { className: `${styles.typography} ${styles[font]} ${styles[weight]}` },
+        { className: `${styles[variant]} ${styles[weight]} ${styles[size]}` },
         children
     );
 })

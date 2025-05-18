@@ -1,59 +1,64 @@
-.typography {
-    padding: 0;
-    margin: 0;
+.display {
+    font-family: var(--font-header);
 }
 
-.header {
+.heading {
     font-family: var(--font-header);
+}
+
+.heading_italics {
+    font-family: var(--font-header);
+    font-style: italic;
 }
 
 .body {
     font-family: var(--font-body);
 }
 
-h3 {
-    font-size: 28px;
+.normal {
+    font-weight: normal;
 }
 
-h4 {
-    font-size: 18px;
+.medium {
+    font-weight: 500;
 }
 
-p {
-    font-size: 16px;
-}
-
-.bolder {
-    font-weight: bolder;
+.semi_bold {
+    font-weight: 600;
 }
 
 .bold {
     font-weight: bold;
 }
 
-.medium {
-    font-weight: medium;
+.extrabold {
+    font-weight: 800;
 }
 
-.normal {
-    font-weight: normal;
+.xs {
+    font-size: 12px;
 }
 
-.lighter {
-    font-weight: lighter;
+.sm {
+    font-size: 14px;
 }
 
-.link {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.md {
+    font-size: 17px;
+}
 
-    width: fit-content;
-    
-    color: inherit;
-    text-decoration: none;
+.lg {
+    font-size: 24px;
+}
 
-    &:hover {
-        text-decoration: underline;
-    }
+.xl {
+    font-size: 29px;
+}
+
+.xxl {
+    font-size: 35px;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+    margin: 0;
 }
