@@ -23,4 +23,20 @@
     border: none;
     background-color: transparent;
     color: var(--text-primary);
+
+    animation: open_modal 200ms ease-in-out;
+}
+
+@keyframes open_modal {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    50% {
+        opacity: 0.75;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
