@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useQuery } from "react-query";
 import { Modal } from "#/portals/Modals/Modal";
 
 import neptune from "#/util/api/neptune";
 import { Typography } from "#/components/Typography/Typography";
 import { Skeleton } from "#/components/Skeleton/Skeleton";
+import { WarningIcon } from "#/components/Icons/Icons";
 
 import { Episode } from "./Episode"; 
 import styles from "./AnimeQueuer.module.scss";
+import Button from "#/components/Button/Button";
 
 type AnimeQueuerProps = {
     id: string;
@@ -21,6 +24,8 @@ export function AnimeQueuer({ id, onClose }: AnimeQueuerProps) {
             });
     }, { staleTime: Infinity });
 
+    const [ nsfwFlagAcknowledged, setNsfwFlagAcknowledged ] = useState(false);
+
     return (<>
         <Modal onClose={onClose}>
             <div
@@ -30,6 +35,39 @@ export function AnimeQueuer({ id, onClose }: AnimeQueuerProps) {
                 } as React.CSSProperties}
             >{!isLoading
                 ? <>
+                    {(info?.meta.is_nsfw || info?.meta.genres.includes("Ecchi")) && !nsfwFlagAcknowledged &&
+                        <div className={styles.nsfw_flag}>
+                            <WarningIcon
+                                width={50}
+                                height={50}
+                            />
+                            <div className={styles.warning_info}>
+                                <Typography variant="heading" size="lg" weight="bold">
+                                    Sensitive Content
+                                </Typography>
+                                <Typography size="md" weight="medium">
+                                    This anime may contain content or topics that are sensitive to some viewers. Please proceed with caution when queuing.
+                                </Typography>
+                            </div>
+                            <div className={styles.buttons}>
+                                <Button
+                                    color="Neutral"
+                                    display="Filled"
+                                    onClick={onClose}
+                                >
+                                    Go Back
+                                </Button>
+                                <Button
+                                    color="Danger"
+                                    display="Filled"
+                                    onClick={() => setNsfwFlagAcknowledged(true)}
+                                >
+                                    Proceed
+                                </Button>
+                            </div>
+                        </div>
+                    }
+
                     <div className={styles.cover}>
                         {info?.meta.background && <img src={info.meta.background} />}
                     </div>
