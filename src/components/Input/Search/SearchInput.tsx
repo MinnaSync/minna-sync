@@ -7,6 +7,7 @@ import { Input } from "../Input";
 import styles from "./SearchInput.module.scss";
 import { SearchResult, SearchResultProps } from "./SearchResult";
 import neptune from "#/util/api/neptune";
+import { Typography } from "#/components/Typography/Typography";
 
 export function SearchInput() {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -15,9 +16,10 @@ export function SearchInput() {
     const [ searchHasValue, setSearchHasValue ] = useState(false);
     const [ searchValue, setSearchValue ] = useState("");
     const [ isFocused, setIsFocused ] = useState(false);
+    const [ provider, _ ] = useState<"animepahe">("animepahe");
 
     const { data: search } = useQuery(["search", searchValue], () => {
-        return neptune.search(searchValue, { provider: "animepahe" });
+        return neptune.search(searchValue, { provider: provider });
     }, { enabled: searchValue.length >= 3, staleTime: Infinity });
 
     const handleSearch = useCallback(async () => {
@@ -105,17 +107,24 @@ export function SearchInput() {
 
     return (<>
         <div className={styles.search_container}>
-            <div className={styles.search_input}>
-                <SearchIcon />
-                <Input
-                    ref={inputRef}
-                    placeholder="Search Anime"
-                />
-                {searchHasValue && (
-                    <div className={styles.clear_search} onClick={handleClear}>
-                        <CloseIcon width={10} height={10} />
-                    </div>
-                )}
+            <div className={styles.search_input_container}>
+                <div className={styles.search_input}>
+                    <SearchIcon />
+                    <Input
+                        ref={inputRef}
+                        placeholder="Search Anime"
+                    />
+                    {searchHasValue && (
+                        <div className={styles.clear_search} onClick={handleClear}>
+                            <CloseIcon width={10} height={10} />
+                        </div>
+                    )}
+                </div>
+                <div className={styles.search_provider}>
+                    <Typography variant='heading' size="xs" weight="medium">
+                        {provider}
+                    </Typography>
+                </div>
             </div>
             <div className={`${styles.search_content}${results.length > 0 ? ` ${styles.has_content}` : ''}${isFocused ? ` ${styles.focused}` : ''}`}>
                 {results
