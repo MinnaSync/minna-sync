@@ -25,23 +25,31 @@ export function Channel() {
     const [ paused, setPaused ] = useState(true);
     const [ series, setSeries ] = useState<null | string>(null);
     const [ title, setTitle ] = useState<null | string>(null);
-    const suppressStatusUpdated = useRef(false);
 
-    const handlePausePlay = useCallback((paused: boolean) => {
-        if (suppressStatusUpdated.current) {
-            suppressStatusUpdated.current = false;
-            return;
+    const suppressStatusUpdates = useRef(false);
+    const suppressTimeout = useRef<number | null>(null);
+
+    const handleTempSuppress = useCallback(() => {
+        suppressStatusUpdates.current = true;
+
+        if (suppressTimeout.current) {
+            clearTimeout(suppressTimeout.current);
         }
 
+        // @ts-ignore
+        suppressTimeout.current = setTimeout(() => {
+            suppressStatusUpdates.current = false;
+            suppressTimeout.current = null;
+        }, 250);
+    }, []);
+
+    const handlePausePlay = useCallback((paused: boolean) => {
+        if (suppressStatusUpdates.current) return;
         websocket.emit("player_state", { paused });
     }, []);
 
     const handleTimeUpdate = useCallback((time: number) => {
-        if (suppressStatusUpdated.current) {
-            suppressStatusUpdated.current = false;
-            return;
-        }
-
+        if (suppressStatusUpdates.current) return;
         websocket.emit("player_state", { current_time: time });
     }, []);
 
@@ -52,20 +60,19 @@ export function Channel() {
 
         websocket.on("room_data", ({ now_playing }: RoomDataEvent) => {
             if (!now_playing || !playerRef.current) return;
-            suppressStatusUpdated.current = true;
+
+            handleTempSuppress();
 
             setSrc(`http://localhost:8443/m3u8/${now_playing.url}`);
             setTime(now_playing.current_time);
             setPaused(now_playing.paused);
             setSeries(now_playing.series);
             setTitle(now_playing.title);
-
-            console.log(now_playing);
         });
 
         websocket.on("media_changed", ({ url, series, title }: MediaUpdateEvent) => {
-            suppressStatusUpdated.current = true;
-            
+            handleTempSuppress();
+
             setSrc(`http://localhost:8443/m3u8/${url}`);
             setTime(0);
             setPaused(false);
@@ -76,7 +83,7 @@ export function Channel() {
         websocket.on("state_updated", ({ current_time, paused }: TimeUpdateEvent) => {
             if (!playerRef.current) return;
 
-            suppressStatusUpdated.current = true;
+            handleTempSuppress();
 
             const playerTime = playerRef.current.currentTime;
             if (Math.abs(playerTime - current_time) > 1) {
@@ -84,9 +91,16 @@ export function Channel() {
             };
 
             if (playerRef.current.paused !== paused) {
-                playerRef.current.paused = paused;
+                paused ? playerRef.current.pause() : playerRef.current.play();
             }
         });
+
+        return () => {
+            websocket.off("connected");
+            websocket.off("room_data");
+            websocket.off("media_changed");
+            websocket.off("state_updated");
+        }
     }, []);
 
     return (<>
