@@ -44,6 +44,7 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
 
     const [ playerFocused, setPlayerFocused ] = useState(false);
     const [ isPaused, setIsPaused ] = useState(false);
+    const [ currentTime, setCurrentTime ] = useState("00:00 / 00:00");
 
     const onProviderChange = useCallback((provider: MediaProviderAdapter | null, _: MediaProviderChangeEvent) => {
         if (!isHLSProvider(provider)) return;
@@ -67,7 +68,7 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
         if (!ref.current || !progressBarRef.current || !timerRef.current) return;
 
         progressBarRef.current.style.width = `${ref.current.currentTime / ref.current.duration * 100}%`;
-        timerRef.current.textContent = `${formatTime(ref.current.currentTime)} / ${formatTime(ref.current.duration)}`;
+        setCurrentTime(`${formatTime(ref.current.currentTime)} / ${formatTime(ref.current.duration)}`);
     }, []);
 
     const handleSeekingUpdate = useCallback((e: MouseEvent | TouchEvent) => {
@@ -209,8 +210,8 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
                             ref={timerRef}
                             className={styles.timer}
                         >
-                            <Typography variant='body' weight='medium' size='sm'>
-                                00:00 / 00:00
+                            <Typography variant='heading' weight='medium' size='sm'>
+                                {currentTime}
                             </Typography>
                         </div>
                     </ControlGroup>
