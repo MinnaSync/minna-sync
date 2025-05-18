@@ -1,0 +1,113 @@
+button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    gap: 8px;
+
+    width: fit-content;
+    padding: 10px 15px;
+
+    border: none;
+    border-radius: 25px;
+    background-color: transparent;
+    transition: background-color 100ms ease-in-out;
+
+    font-weight: bold;
+    font-size: 16px;
+    font-family: inherit;
+
+    color: #fff;
+    border: 2px solid color-mix(in srgb, var(--button-color) 50%, white 25%);
+
+    &.iconOnly {
+        padding: 10px;
+    }
+
+    &.textColorInverted {
+        color: #000;
+    }
+
+    &:hover {
+        cursor: pointer;
+        &:is(:disabled) {
+            cursor: not-allowed;
+        }
+    }
+
+    &:disabled {
+        opacity: 0.5;
+    }
+
+    &.displayFilled {
+        background-color: var(--button-color);
+
+        &:hover:not(:disabled) {
+            background-color: color-mix(in srgb, var(--button-color) 75%, #000 15%); 
+        }
+        &:active:not(:disabled) {
+            background-color: color-mix(in srgb, var(--button-color) 75%, #000 35%) !important; 
+        }
+    }
+
+    &.displayOutlined {
+        border: 1px solid var(--button-color);
+
+        &:hover:not(:disabled) {
+            background-color: color-mix(in srgb, var(--button-color) 15%, transparent);
+        }
+        &:active:not(:disabled) {
+            background-color: color-mix(in srgb, var(--button-color) 25%, transparent);
+        }
+    }
+
+    &.displayLink {
+        color: var(--button-color);
+        background-color: transparent;
+
+        &:hover:not(:disabled) {
+            text-decoration: underline;
+            background-color: color-mix(in srgb, var(--button-color) 15%, transparent);
+        }
+        &:active:not(:disabled) {
+            text-decoration: underline;
+            background-color: color-mix(in srgb, var(--button-color) 25%, transparent);
+        }
+    }
+
+    &.displayGhost {
+        background-color: transparent;
+
+        &:hover:not(:disabled) {
+            background-color: color-mix(in srgb, var(--button-color) 15%, transparent);
+        }
+        &:active:not(:disabled) {
+            background-color: color-mix(in srgb, var(--button-color) 25%, transparent);
+        }
+    }
+}
+
+.colorPrimary {
+    --button-color: var(--accent-primary);
+}
+
+.colorDanger {
+    --button-color: var(--accent-red);
+}
+
+.colorWarning {
+    --button-color: var(--accent-orange);
+}
+
+.colorPositive {
+    --button-color: var(--accent-green);
+}
+
+.colorWhite {
+    --button-color: hsl(0, 0%, 100%);
+}
+
+.colorNeutral {
+    --button-color: hsl(0, 0%, 35%);
+}
