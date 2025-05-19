@@ -10,10 +10,21 @@ import { WarningIcon } from "#/components/Icons/Icons";
 import { Episode } from "./Episode"; 
 import styles from "./AnimeQueuer.module.scss";
 import Button from "#/components/Button/Button";
+import { AnimeInfo } from "api-types";
 
 type AnimeQueuerProps = {
     id: string;
     onClose: () => void;
+}
+
+function isSensitive(info: AnimeInfo['meta']) {
+    if (info.is_nsfw) return true;
+
+    const sensitiveGenres = [
+        "Ecchi"
+    ];
+
+    return sensitiveGenres.some((genre) => info.genres.includes(genre));
 }
 
 export function AnimeQueuer({ id, onClose }: AnimeQueuerProps) {
@@ -35,7 +46,7 @@ export function AnimeQueuer({ id, onClose }: AnimeQueuerProps) {
                 } as React.CSSProperties}
             >{!isLoading
                 ? <>
-                    {(info?.meta.is_nsfw || info?.meta.genres.includes("Ecchi")) && !nsfwFlagAcknowledged &&
+                    {isSensitive(info?.meta!) && !nsfwFlagAcknowledged &&
                         <div className={styles.nsfw_flag}>
                             <WarningIcon
                                 width={50}
