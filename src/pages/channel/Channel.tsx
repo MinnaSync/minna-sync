@@ -50,6 +50,7 @@ export function Channel() {
 
     const handleTimeUpdate = useCallback((time: number) => {
         if (suppressStatusUpdates.current) return;
+
         websocket.emit("player_state", { current_time: time });
     }, []);
 
@@ -80,10 +81,15 @@ export function Channel() {
             setTitle(title);
         });
 
-        websocket.on("state_updated", ({ current_time, paused }: TimeUpdateEvent) => {
+        websocket.on("state_updated", ({ current_time, paused, user_updated }: TimeUpdateEvent) => {
             if (!playerRef.current) return;
 
-            handleTempSuppress();
+            /**
+             * Only suppress the state if the user is the one that updated it.
+             */
+            if (user_updated) {
+                handleTempSuppress();
+            }
 
             const playerTime = playerRef.current.currentTime;
             if (Math.abs(playerTime - current_time) > 1) {

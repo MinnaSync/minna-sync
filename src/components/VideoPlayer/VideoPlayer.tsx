@@ -91,6 +91,10 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
     }, []);
 
     useEffect(() => {
+        remote.changeClipEnd(ref.current!.duration + 1);
+    }, []);
+
+    useEffect(() => {
         let seeking = false;
         let displayControlsTimeout: number | null = null;
 

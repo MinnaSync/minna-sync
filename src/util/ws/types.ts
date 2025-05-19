@@ -55,6 +55,10 @@ export type GenericPlayingMedia = {
      * The current playback time of the media.
      */
     current_time: number;
+    /**
+     * Wether or not the user was the one to update the state.
+     */
+    user_updated: boolean;
 }
 
 export interface NowPlaying extends GenericMedia, GenericPlayingMedia {};
