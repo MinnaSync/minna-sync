@@ -10,6 +10,7 @@
 
         border: 1px solid var(--border-faint);
         border-radius: 8px;
+        background-color: var(--input-background);
 
         &:has(.search_input:focus-within) {
             border-color: var(--accent-primary);
@@ -24,8 +25,7 @@
         gap: 5px;
 
         width: 350px;
-
-        background-color: var(--input-background);
+        border-right: 1px solid var(--border-faint);
     }
 
     .search_content {
@@ -67,8 +67,5 @@
     .search_provider {
         height: 100%;
         padding: 10px;
-
-        border-left: 1px solid var(--border-faint);
-        background-color: var(--input-background);
     }
 }
