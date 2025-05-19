@@ -2,13 +2,13 @@ import { useEffect, useState, useRef, memo, Fragment } from "react";
 import { useParams } from "react-router";
 
 import { useWebsocket } from "#/providers/WebsocketProvider";
-import { UserJoinEvent, UserLeftEvent, type UserMessageEvent } from "#/util/ws/types";
+import { MediaChangedEvent, MediaUpdateEvent, UserJoinEvent, UserLeftEvent, type UserMessageEvent } from "#/util/ws/types";
 
 import styles from "./ChatContent.module.scss";
 import { ChatMessage } from "./ChatMessage";
 import { ChatNotification } from "./ChatNotification";
 import { Typography } from "#/components/Typography/Typography";
-import { EnterIcon, LeaveIcon } from "#/components/Icons/Icons";
+import { EnterIcon, LeaveIcon, PlayIcon, QueueIcon } from "#/components/Icons/Icons";
 import { MessageInput } from "../Input/MessageInput";
 
 export const ChatContent = memo(() => {
@@ -93,10 +93,32 @@ export const ChatContent = memo(() => {
             }]);
         });
 
+        websocket.on('queue_updated', ({ title, series }: MediaUpdateEvent) => {
+            setMessages((p) => [...p, {
+                type: 'notification',
+                icon: <QueueIcon />,
+                accent: 'primary',
+                message: `${series} - ${title} has been added to the queue.`,
+            }]);
+        });
+
+        websocket.on('media_changed', ({ title, series }: MediaChangedEvent) => {
+            console.log(true);
+
+            setMessages((p) => [...p, {
+                type: 'notification',
+                icon: <PlayIcon />,
+                accent: 'primary',
+                message: `${series} - ${title} is now playing.`,
+            }]);
+        });
+
         return () => {
             websocket.off("user_joined");
             websocket.off("user_left");
             websocket.off("receive_message");
+            websocket.off("queue_updated");
+            websocket.off("media_changed");
         };
     }, []);
     

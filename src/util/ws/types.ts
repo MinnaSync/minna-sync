@@ -65,6 +65,8 @@ export interface NowPlaying extends GenericMedia, GenericPlayingMedia {};
 
 export type MediaUpdateEvent = GenericMedia;
 
+export type MediaChangedEvent = NowPlaying;
+
 export type RoomDataEvent = {
     /**
      * The current playing media.
