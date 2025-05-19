@@ -16,7 +16,7 @@ export class Websocket {
     public connected: boolean;
     public reconnecting: boolean;
 
-    public handlers: Map<string, (data: any) => void>;
+    public handlers: Map<string, Set< (data: any) => void>>;
     public queue: MessageEvent[];
 
     private readonly controller: AbortController;
@@ -61,13 +61,9 @@ export class Websocket {
                 return;
             }
 
-            const callback = this.handlers.get(result.event);
-            if (!callback) {
-                console.error(`No handler for event: ${result!.event}`);
-                return;
+            for (const callback of this.handlers.get(result.event)!) {
+                callback(result.data);
             }
-
-            callback(result!.data);
         }, { signal: this.signal });
 
         this.ws.addEventListener("close", () => {
@@ -107,7 +103,11 @@ export class Websocket {
     }
 
     public on(event: string, callback: (data: any) => void) {
-        this.handlers.set(event, callback);
+        if (!this.handlers.has(event)) {
+            this.handlers.set(event, new Set());
+        }
+
+        this.handlers.get(event)!.add(callback);
     }
 
     public once(event: string, callback: (data: any) => void) {
@@ -117,7 +117,17 @@ export class Websocket {
         });
     }
 
-    public off(event: string) {
+    public off(event: string, callback?: (data: any) => void) {
+        if (callback) {
+            this.handlers.get(event)?.delete(callback);
+
+            if (this.handlers.get(event)?.size === 0) {
+                this.handlers.delete(event);
+            }
+
+            return;
+        }
+
         this.handlers.delete(event);
     }
 
