@@ -24,7 +24,7 @@ export function Episode({ id, series, title, poster, number, thumbnail }: Episod
     const { data: episodeInfo, refetch } = useQuery(["episodeInfo", id], () => {
         return neptune.animepaheStream(id);
     }, {
-        enabled: !fetched,
+        enabled: false,
         staleTime: Infinity,
     });
 
@@ -54,7 +54,7 @@ export function Episode({ id, series, title, poster, number, thumbnail }: Episod
     return (<>
         <div className={styles.episode} onClick={handleClick}>
             <div className={styles.thumbnail}>
-                <img src={thumbnail} />
+                <img loading="lazy" src={thumbnail} />
                 <div className={styles.episode_number}>
                     <Typography variant="heading" size="sm" weight="bold">
                         EP {number}

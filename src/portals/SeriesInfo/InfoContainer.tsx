@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useQuery } from "react-query";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { useInfiniteQuery } from "react-query";
 import parse from 'html-react-parser';
 import { AnimeInfo } from "api-types";
 
@@ -31,16 +31,42 @@ function isSensitive(info: AnimeInfo['meta']) {
 }
 
 export function InfoContainer({ id, provider, resource, onClose }: InfoContainerProps) {
-    const { data: info, isLoading } = useQuery(["info", id], () => {
-        return neptune.info({ id, provider, resource })
-            .then((r) => {
-                if (r?.isOk()) return r.value;
-            });
-    }, { staleTime: Infinity });
+    const containerRef = useRef<HTMLDivElement | null>(null);
 
     const [ nsfwFlagAcknowledged, setNsfwFlagAcknowledged ] = useState(false);
 
+    const {
+        data: info,
+        isLoading,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    } = useInfiniteQuery({
+        queryKey: ["info", id],
+        queryFn: ({ pageParam = 1 }) => neptune.info({ id, provider, resource, page: pageParam.toString() }).then((r) =>
+            r.isOk() ? r.value : undefined
+        ),
+        getNextPageParam(lastPage, pages) {
+            if (!lastPage || !lastPage.details.hasNextPage) return;
+            return pages.length + 1;
+        },
+        staleTime: Infinity,
+        refetchOnWindowFocus: false,
+    });
+
+    const handleScroll = useCallback(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const threshold = container.scrollHeight - container.scrollTop - container.clientHeight < 250;
+        if (threshold && hasNextPage && !isFetchingNextPage && !isLoading) {
+            fetchNextPage();
+        }
+    }, [isFetchingNextPage, hasNextPage, isLoading, fetchNextPage]);
+
     useEffect(() => {
+        let debounceTimer: number | null = null;
+
         const controller = new AbortController();
         const signal = controller.signal;
 
@@ -53,16 +79,31 @@ export function InfoContainer({ id, provider, resource, onClose }: InfoContainer
         };
 
         document.addEventListener("keyup", handleKeyDown, { signal });
+        containerRef.current?.addEventListener("scroll", () => {
+            if (debounceTimer) {
+                clearTimeout(debounceTimer);
+            }
 
-        return () => controller.abort();
+            // @ts-ignore
+            debounceTimer = setTimeout(handleScroll, 500); // Reset the debounce timer
+        }, { signal });
+
+        return () => {
+            controller.abort();
+
+            if (debounceTimer) {
+                clearTimeout(debounceTimer);
+            }
+        };
     }, []);
 
     return createPortal(
         <>
             <div
+                ref={containerRef}
                 className={styles.container}
                 style={{ 
-                    "--accent-color": (!isLoading && info?.meta.color) || "var(--accent-primary)",
+                    "--accent-color": (!isLoading && info?.pages[0]?.meta.color) || "var(--accent-primary)",
                 } as React.CSSProperties}
             >
                 <div className={styles.close_container}>
@@ -75,7 +116,7 @@ export function InfoContainer({ id, provider, resource, onClose }: InfoContainer
                 </div>
             {!isLoading
                 ? <>
-                    {isSensitive(info?.meta!) && !nsfwFlagAcknowledged &&
+                    {isSensitive(info?.pages[0]?.meta!) && !nsfwFlagAcknowledged &&
                         <div className={styles.nsfw_flag}>
                             <WarningIcon
                                 width={50}
@@ -110,34 +151,34 @@ export function InfoContainer({ id, provider, resource, onClose }: InfoContainer
                     <div className={styles.details}>
                         <img
                             className={styles.poster}
-                            src={info?.meta.poster!}
+                            src={info?.pages[0]?.meta.poster!}
                         />
                         <div className={styles.series_details}>
                             <div className={styles.tags}>
                                 <div className={styles.tag}>
                                     <Typography variant="heading" size="md" weight="medium">
-                                        {info?.meta.type}
+                                        {info?.pages[0]?.meta.type}
                                     </Typography>
                                 </div>
                                 <div className={styles.tag}>
                                     <Typography variant="heading" size="md" weight="medium">
-                                        {info?.meta.year}
+                                        {info?.pages[0]?.meta.year}
                                     </Typography>
                                 </div>
                             </div>
                             <div className={styles.title}>
                                 <Typography variant="heading" size="xxl" weight="extrabold">
-                                    {info?.meta.title.english}
+                                    {info?.pages[0]?.meta.title.english}
                                 </Typography>
                                 <div className={styles.sub_title}>
                                     <Typography variant="heading" size="md" weight="bold">
-                                        {`${info?.meta.title.romaji} (${info?.meta.title.native})`}
+                                        {`${info?.pages[0]?.meta.title.romaji} (${info?.pages[0]?.meta.title.native})`}
                                     </Typography>
                                 </div>
                             </div>
                             <div className={styles.description}>
                                 <Typography variant="body" size="md" weight="normal">
-                                    {info?.meta.description && parse(info?.meta.description)}
+                                    {info?.pages[0]?.meta.description && parse(info?.pages[0]?.meta.description)}
                                 </Typography>
                             </div>
                             <div className={styles.tag_group}>
@@ -145,7 +186,7 @@ export function InfoContainer({ id, provider, resource, onClose }: InfoContainer
                                     Genres
                                 </Typography>
                                 <div className={styles.tags}>
-                                    {info?.meta.genres.map((genre) =>
+                                    {info?.pages[0]?.meta.genres.map((genre) =>
                                         <div key={genre} className={styles.tag}>
                                             <Typography variant="body" size="sm" weight="normal">
                                                 {genre}
@@ -159,7 +200,7 @@ export function InfoContainer({ id, provider, resource, onClose }: InfoContainer
                                     Studios
                                 </Typography>
                                 <div className={styles.tags}>
-                                    {info?.meta.studios.map((s) =>
+                                    {info?.pages[0]?.meta.studios.map((s) =>
                                         <div key={s} className={styles.tag}>
                                             <Typography variant="body" size="sm" weight="normal">
                                                 {s}
@@ -171,14 +212,14 @@ export function InfoContainer({ id, provider, resource, onClose }: InfoContainer
                         </div>
                         <div className={styles.gradient}></div>
                         <div className={styles.cover}>
-                            {info?.meta.trailer && info.meta.trailer.platform === "youtube" && <div className={styles.trailer}>
+                            {info?.pages[0]?.meta.trailer && info.pages[0].meta.trailer.platform === "youtube" && <div className={styles.trailer}>
                                 <iframe
                                     loading="lazy"
                                     allow="autoplay; encrypted-media"
-                                    src={`https://www.youtube.com/embed/${info?.meta.trailer?.id}?autoplay=1&loop=1&playlist=${info?.meta.trailer?.id}&mute=1&cc_load_policy=0&iv_load_policy=0&controls=0&modestbranding`}>
+                                    src={`https://www.youtube.com/embed/${info?.pages[0]?.meta.trailer?.id}?autoplay=1&loop=1&playlist=${info?.pages[0]?.meta.trailer?.id}&mute=1&cc_load_policy=0&iv_load_policy=0&controls=0&modestbranding`}>
                                 </iframe> 
                             </div>}
-                            <img className={styles.cover} src={info?.meta.background!} />
+                            <img className={styles.cover} src={info?.pages[0]?.meta.background!} />
                         </div>
                     </div>
                     <div className={styles.episodes_content}>
@@ -187,17 +228,31 @@ export function InfoContainer({ id, provider, resource, onClose }: InfoContainer
                                 Episodes
                             </Typography>
                             <div className={styles.episodes_list}>
-                                {info?.episodes!.map((episode) => (
+                                {info?.pages.map((p) =>
+                                    p?.details.episodes.map((episode) => (
+                                        <Episode
+                                            key={episode.id}
+                                            id={episode.id}
+                                            series={info?.pages[0]?.meta.title.english!}
+                                            title={episode.title!}
+                                            poster={info?.pages[0]?.meta.poster!}
+                                            number={episode.episode as number}
+                                            thumbnail={`http://localhost:8443/proxied/${episode.preview}`}
+                                        />
+                                    ))
+                                )}
+
+                                {/* {info?.details?.episodes?.map((episode) => (
                                     <Episode
                                         key={episode.id}
                                         id={episode.id}
                                         series={info.meta.title.english}
                                         title={episode.title!}
-                                        poster={info?.meta.poster!}
+                                        poster={info?.pages[0]?.meta.poster!}
                                         number={episode.episode as number}
                                         thumbnail={`http://localhost:8443/proxied/${episode.preview}`}
                                     />
-                                ))}
+                                ))} */}
                             </div>
                         </div>
                     </div>
