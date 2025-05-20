@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState} from "react";
+import { useEffect } from "react";
 import { useQuery } from "react-query";
 
-import { useWebsocket } from "#/providers/WebsocketProvider";
+import { MediaUpdateEvent } from "#/util/ws/types";
 import { Typography } from "#/components/Typography/Typography";
 import styles from "./Episode.module.scss";
 import neptune from "#/util/api/neptune";
@@ -13,46 +13,37 @@ type EpisodeProps = {
     poster: string;
     number: number;
     thumbnail: string;
+
+    queueRef: React.RefObject<Set<string>>;
+    onQueue: (info: MediaUpdateEvent) => void;
 };
 
-export function Episode({ id, series, title, poster, number, thumbnail }: EpisodeProps) {
-    const websocket = useWebsocket();
-
-    const [ fetched, setFetched ] = useState(false);
-    const [ queued, setQueued ] = useState(false);
-
-    const { data: episodeInfo, refetch } = useQuery(["episodeInfo", id], () => {
-        return neptune.animepaheStream(id);
-    }, {
-        enabled: false,
+export function Episode({ id, series, title, poster, number, thumbnail, queueRef, onQueue }: EpisodeProps) {
+    const { data: episodeInfo, refetch } = useQuery({
+        enabled: !!queueRef.current.has(id),
+        queryKey: ["episodeInfo", id],
+        queryFn: async () => await neptune.animepaheStream(id),
         staleTime: Infinity,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
     });
 
-    const handleClick = useCallback(() => {
-        if (fetched) return;
-        refetch();
-
-        setFetched(true);
-    }, []);
-
     useEffect(() => {
-        if (!fetched || !episodeInfo?.isOk()) return;
-        if (queued) return;
+        if (!episodeInfo?.isOk()) return;
 
         const info = episodeInfo.value;
 
-        websocket.emit("queue_media", {
+        onQueue({
+            id: id,
             title: title,
             series: series,
-            url: info.jpn.find((r) => r.resolution === "1080")?.link,
+            url: info.jpn.find((r) => r.resolution === "1080")?.link!,
             poster_image_url: poster,
         });
-
-        setQueued(true);
-    }, [fetched, queued]);
+    }, [episodeInfo]);
 
     return (<>
-        <div className={styles.episode} onClick={handleClick}>
+        <div className={styles.episode} onClick={() => refetch()}>
             <div className={styles.thumbnail}>
                 <img loading="lazy" src={thumbnail} />
                 <div className={styles.episode_number}>

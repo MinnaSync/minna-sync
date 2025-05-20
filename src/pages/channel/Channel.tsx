@@ -18,6 +18,8 @@ export function Channel() {
     const playerRef = useRef<MediaPlayerInstance | null>(null);
     useStore(MediaPlayerInstance, playerRef);
 
+    const queuedRef = useRef(new Set<string>());
+
     const channelId = useParams().channelId;
     const websocket = useWebsocket();
 
@@ -74,7 +76,7 @@ export function Channel() {
             websocket.emit("join_room", channelId);
         });
 
-        websocket.on("room_data", ({ now_playing }: RoomDataEvent) => {
+        websocket.on("room_data", ({ now_playing, queue }: RoomDataEvent) => {
             if (!now_playing || !playerRef.current) return;
 
             handleTempSuppress();
@@ -84,6 +86,10 @@ export function Channel() {
             setPaused(now_playing.paused);
             setSeries(now_playing.series);
             setTitle(now_playing.title);
+
+            for (const media of queue) {
+                queuedRef.current.add(media.id);
+            }
         });
 
         websocket.on("media_changed", ({ url, series, title }: MediaUpdateEvent) => {
@@ -94,6 +100,10 @@ export function Channel() {
             setPaused(false);
             setSeries(series);
             setTitle(title);
+        });
+
+        websocket.on("queue_updated", ({ id }: MediaUpdateEvent) => {
+            queuedRef.current.add(id);
         });
 
         websocket.on("state_updated", ({ current_time, paused }: TimeUpdateEvent) => {
@@ -112,6 +122,7 @@ export function Channel() {
         return () => {
             websocket.off("connected");
             websocket.off("room_data");
+            websocket.off("queue_updated");
             websocket.off("media_changed");
             websocket.off("state_updated");
         }
@@ -131,6 +142,14 @@ export function Channel() {
                     id={openedPage!}
                     provider={provider}
                     resource={resource}
+                    queueRef={queuedRef}
+                    onQueue={(info) => {
+                        console.log(true);
+                        if (queuedRef.current.has(info.id)) return;
+
+                        websocket.emit("queue_media", info);
+                        queuedRef.current.add(info.id);
+                    }}
                     onClose={() => setOpenedPage(null)}
                 />}
                 <div id="search_info"></div>

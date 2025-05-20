@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useInfiniteQuery } from "react-query";
 import parse from 'html-react-parser';
 import { AnimeInfo } from "api-types";
@@ -6,9 +7,9 @@ import { AnimeInfo } from "api-types";
 import styles from "./InfoContainer.module.scss";
 import { Typography } from "#/components/Typography/Typography";
 
+import { MediaUpdateEvent } from "#/util/ws/types";
 import neptune from "#/util/api/neptune";
 import { Skeleton } from "#/components/Skeleton/Skeleton";
-import { createPortal } from "react-dom";
 import { CloseIcon, WarningIcon } from "#/components/Icons/Icons";
 import Button from "#/components/Button/Button";
 import { Episode } from "./Episode";
@@ -17,6 +18,10 @@ type InfoContainerProps = {
     id: string;
     provider: "animepahe";
     resource: "anilist";
+
+    queueRef: React.RefObject<Set<string>>;
+    onQueue: (info: MediaUpdateEvent) => void;
+
     onClose: () => void;
 };
 
@@ -30,7 +35,7 @@ function isSensitive(info: AnimeInfo['meta']) {
     return sensitiveGenres.some((genre) => info.genres.includes(genre));
 }
 
-export function InfoContainer({ id, provider, resource, onClose }: InfoContainerProps) {
+export function InfoContainer({ id, provider, resource, queueRef, onQueue, onClose }: InfoContainerProps) {
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     const [ nsfwFlagAcknowledged, setNsfwFlagAcknowledged ] = useState(false);
@@ -43,7 +48,7 @@ export function InfoContainer({ id, provider, resource, onClose }: InfoContainer
         isFetchingNextPage,
     } = useInfiniteQuery({
         queryKey: ["info", id],
-        queryFn: ({ pageParam = 1 }) => neptune.info({ id, provider, resource, page: pageParam.toString() }).then((r) =>
+        queryFn: async ({ pageParam = 1 }) => await neptune.info({ id, provider, resource, page: pageParam.toString() }).then((r) =>
             r.isOk() ? r.value : undefined
         ),
         getNextPageParam(lastPage, pages) {
@@ -52,6 +57,7 @@ export function InfoContainer({ id, provider, resource, onClose }: InfoContainer
         },
         staleTime: Infinity,
         refetchOnWindowFocus: false,
+        refetchOnMount: false,
     });
 
     const handleScroll = useCallback(() => {
@@ -238,21 +244,11 @@ export function InfoContainer({ id, provider, resource, onClose }: InfoContainer
                                             poster={info?.pages[0]?.meta.poster!}
                                             number={episode.episode as number}
                                             thumbnail={`http://localhost:8443/proxied/${episode.preview}`}
+                                            queueRef={queueRef}
+                                            onQueue={onQueue}
                                         />
                                     ))
                                 )}
-
-                                {/* {info?.details?.episodes?.map((episode) => (
-                                    <Episode
-                                        key={episode.id}
-                                        id={episode.id}
-                                        series={info.meta.title.english}
-                                        title={episode.title!}
-                                        poster={info?.pages[0]?.meta.poster!}
-                                        number={episode.episode as number}
-                                        thumbnail={`http://localhost:8443/proxied/${episode.preview}`}
-                                    />
-                                ))} */}
                             </div>
                         </div>
                     </div>

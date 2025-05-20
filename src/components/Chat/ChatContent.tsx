@@ -103,8 +103,6 @@ export const ChatContent = memo(() => {
         });
 
         websocket.on('media_changed', ({ title, series }: MediaChangedEvent) => {
-            console.log(true);
-
             setMessages((p) => [...p, {
                 type: 'notification',
                 icon: <PlayIcon />,

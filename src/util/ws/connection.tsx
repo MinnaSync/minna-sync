@@ -52,7 +52,7 @@ export class Websocket {
         }, { signal: this.signal });
 
         this.ws.addEventListener("message", ({ data }) => {
-            console.log("Received message from websocket", data);
+            console.debug("Received message from websocket", data);
 
             const { result, error } = tryCatch(() => JSON.parse(data) as MessageEvent);
 

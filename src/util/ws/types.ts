@@ -63,7 +63,7 @@ export type GenericPlayingMedia = {
 
 export interface NowPlaying extends GenericMedia, GenericPlayingMedia {};
 
-export type MediaUpdateEvent = GenericMedia;
+export type MediaUpdateEvent = { id: string } & GenericMedia;
 
 export type MediaChangedEvent = NowPlaying;
 
