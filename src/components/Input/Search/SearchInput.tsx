@@ -9,18 +9,19 @@ import { SearchResult, SearchResultProps } from "./SearchResult";
 import neptune from "#/util/api/neptune";
 import { Typography } from "#/components/Typography/Typography";
 
-export function SearchInput() {
+type SearchInputProps = {
+    provider: "animepahe";
+    resource: "anilist";
+    onClickResult: (id: string) => void;
+};
+
+export function SearchInput({ provider, resource, onClickResult }: SearchInputProps) {
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const [ results, setResults ] = useState<Omit<SearchResultProps, "displayPage" | "handleOpen" | "handleClose">[]>([]);
+    const [ results, setResults ] = useState<Omit<SearchResultProps, "handleClick">[]>([]);
     const [ searchHasValue, setSearchHasValue ] = useState(false);
     const [ searchValue, setSearchValue ] = useState("");
     const [ isFocused, setIsFocused ] = useState(false);
-
-    const [ provider, _ ] = useState<"animepahe">("animepahe");
-    const [ resource, __ ] = useState<"anilist">("anilist");
-
-    const [ openInfoId, setOpenInfoId ] = useState<string | null>(null); 
 
     const { data: search } = useQuery(["search", searchValue], () => {
         return neptune.search(searchValue, { provider: provider });
@@ -91,7 +92,7 @@ export function SearchInput() {
 
         // Sorts the results by type.
         // Most people are going to be wanting to watch TV first.
-        const sortedResults: Omit<SearchResultProps, "displayPage" | "handleOpen" | "handleClose">[] = [];
+        const sortedResults: Omit<SearchResultProps, "handleClick">[] = [];
         for (const type of ["TV", "OVA", "ONA", "Movie", "Special"]) {
             const results = search.value.results.filter((r) => r.type === type);
             if (results.length === 0) continue;
@@ -136,13 +137,7 @@ export function SearchInput() {
                         <SearchResult
                             key={result.title}
                             {...result}
-                            displayPage={openInfoId === result.id}
-                            handleClose={() => {
-                                setOpenInfoId(null)
-                            }}
-                            handleOpen={() => {
-                                setOpenInfoId(result.id)
-                            }}
+                            handleClick={() => onClickResult(result.id)}
                         />
                     ))
                 }

@@ -12,6 +12,7 @@ import { useWebsocket } from "#/providers/WebsocketProvider";
 
 import styles from "./Channel.module.scss"
 import { MediaPlayerInstance, useStore } from "@vidstack/react";
+import { InfoContainer } from "#/portals/SeriesInfo/InfoContainer";
 
 export function Channel() {
     const playerRef = useRef<MediaPlayerInstance | null>(null);
@@ -19,6 +20,9 @@ export function Channel() {
 
     const channelId = useParams().channelId;
     const websocket = useWebsocket();
+
+    const [ provider, _ ] = useState<"animepahe">("animepahe");
+    const [ resource, __ ] = useState<"anilist">("anilist");
 
     const [ src, setSrc ] = useState("");
     const [ time, setTime ] = useState(0);
@@ -62,6 +66,8 @@ export function Channel() {
 
         websocket.emit("player_state", { current_time: time });
     }, []);
+
+    const [ openedPage, setOpenedPage ] = useState<string | null>(null);
 
     useEffect(() => {
         websocket.on("connected", () => {
@@ -114,9 +120,19 @@ export function Channel() {
     return (<>
         <div className={styles.container}>
             <Header>
-                <SearchInput />
+                <SearchInput
+                    provider={provider}
+                    resource={resource}
+                    onClickResult={(id) => setOpenedPage(id)}
+                />
             </Header>
             <div className={styles.page_contents}>
+                {openedPage && <InfoContainer
+                    id={openedPage!}
+                    provider={provider}
+                    resource={resource}
+                    onClose={() => setOpenedPage(null)}
+                />}
                 <div id="search_info"></div>
                 <VideoPlayer
                     ref={playerRef}

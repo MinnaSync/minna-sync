@@ -1,20 +1,13 @@
-import { memo, useCallback } from "react";
+import { memo } from "react";
 
 import { Typography } from "#/components/Typography/Typography";
 import { ClosedCaptionIcon, MicrophoneIcon } from "#/components/Icons/Icons";
 
 import styles from "./SearchResult.module.scss";
-import { InfoContainer } from "#/portals/SeriesInfo/InfoContainer";
 
 export type SearchResultProps = {
     id: string;
-
-    displayPage: boolean;
-    provider: "animepahe";
-    resource: "anilist";
-
-    handleClose: () => void;
-    handleOpen: () => void;
+    handleClick: () => void;
 
     title: string;
     image: string;
@@ -27,15 +20,9 @@ export type SearchResultProps = {
 };
 
 export const SearchResult = memo(({
-    id,
-    displayPage, provider, resource, handleOpen, handleClose,
+    handleClick,
     title, image, type, episodes, nsfw
 }: SearchResultProps) => {
-    const handleClick = useCallback(() => {
-        if (displayPage) return;
-        
-        handleOpen();
-    }, [displayPage]);
 
     return (<>
         <div className={styles.search_result} onClick={handleClick}>
@@ -83,11 +70,5 @@ export const SearchResult = memo(({
                 </div>
             </div>
         </div>
-        {displayPage && <InfoContainer
-            id={id!}
-            provider={provider}
-            resource={resource}
-            onClose={handleClose}
-        />}
     </>);
 });
