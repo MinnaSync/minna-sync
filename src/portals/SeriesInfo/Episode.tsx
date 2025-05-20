@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState} from "react";
 import { useQuery } from "react-query";
 
 import { useWebsocket } from "#/providers/WebsocketProvider";
@@ -18,23 +18,26 @@ type EpisodeProps = {
 export function Episode({ id, series, title, poster, number, thumbnail }: EpisodeProps) {
     const websocket = useWebsocket();
 
-    const { data: episodeInfo, refetch, isFetched } = useQuery(["episodeInfo", id], () => {
+    const [ fetched, setFetched ] = useState(false);
+    const [ queued, setQueued ] = useState(false);
+
+    const { data: episodeInfo, refetch } = useQuery(["episodeInfo", id], () => {
         return neptune.animepaheStream(id);
     }, {
-        enabled: false,
+        enabled: !fetched,
         staleTime: Infinity,
-        refetchOnMount: false
     });
 
     const handleClick = useCallback(() => {
-        if (isFetched) return;
+        if (fetched) return;
         refetch();
+
+        setFetched(true);
     }, []);
 
     useEffect(() => {
-        if (!isFetched) return;
-
-        if (!episodeInfo?.isOk()) return;
+        if (!fetched || !episodeInfo?.isOk()) return;
+        if (queued) return;
 
         const info = episodeInfo.value;
 
@@ -44,7 +47,9 @@ export function Episode({ id, series, title, poster, number, thumbnail }: Episod
             url: info.jpn.find((r) => r.resolution === "1080")?.link,
             poster_image_url: poster,
         });
-    }, [isFetched])
+
+        setQueued(true);
+    }, [fetched, queued]);
 
     return (<>
         <div className={styles.episode} onClick={handleClick}>

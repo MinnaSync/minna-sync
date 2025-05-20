@@ -23,7 +23,6 @@ export const SearchResult = memo(({
     handleClick,
     title, image, type, episodes, nsfw
 }: SearchResultProps) => {
-
     return (<>
         <div className={styles.search_result} onClick={handleClick}>
             <img className={styles.image} src={image} />
