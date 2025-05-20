@@ -137,6 +137,7 @@ export function Channel() {
                     onClickResult={(id) => setOpenedPage(id)}
                 />
             </Header>
+            <div id="search_info"></div>
             <div className={styles.page_contents}>
                 {openedPage && <InfoContainer
                     id={openedPage!}
@@ -152,7 +153,6 @@ export function Channel() {
                     }}
                     onClose={() => setOpenedPage(null)}
                 />}
-                <div id="search_info"></div>
                 <VideoPlayer
                     ref={playerRef}
                     src={src}
