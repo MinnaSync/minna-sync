@@ -91,7 +91,7 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
     }, []);
 
     useEffect(() => {
-        remote.changeClipEnd(ref.current!.duration + 1);
+        remote.changeClipEnd(ref.current!.duration + 0.1);
     }, []);
 
     useEffect(() => {
@@ -151,6 +151,10 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
         progress?.addEventListener("touchstart", handleStartSeeking, { signal });
         document.addEventListener("touchmove", handleSeeking, { signal });
         document.addEventListener("touchend", handleStopSeeking, { signal });
+
+        player?.addEventListener("seeking", () => remote.pause(), { signal });
+        player?.addEventListener("seeked", () => remote.play(), { signal });
+        player?.addEventListener("ended", () => remote.pause(), { signal });
     }, []);
 
     return (<>

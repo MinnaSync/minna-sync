@@ -40,11 +40,20 @@ export function Channel() {
         suppressTimeout.current = setTimeout(() => {
             suppressStatusUpdates.current = false;
             suppressTimeout.current = null;
-        }, 250);
+        }, 1_000);
     }, []);
 
     const handlePausePlay = useCallback((paused: boolean) => {
         if (suppressStatusUpdates.current) return;
+        
+        /**
+         * Ignores pause events for when the video is near the end.
+         * 
+         * This prevents the player from telling the server that the video is paused,
+         * causing it to not queue the next ideo.
+         */
+        if (Math.abs(playerRef.current!.currentTime - playerRef.current!.duration) < 0.1) return;
+
         websocket.emit("player_state", { paused });
     }, []);
 
@@ -81,15 +90,8 @@ export function Channel() {
             setTitle(title);
         });
 
-        websocket.on("state_updated", ({ current_time, paused, user_updated }: TimeUpdateEvent) => {
+        websocket.on("state_updated", ({ current_time, paused }: TimeUpdateEvent) => {
             if (!playerRef.current) return;
-
-            /**
-             * Only suppress the state if the user is the one that updated it.
-             */
-            if (user_updated) {
-                handleTempSuppress();
-            }
 
             const playerTime = playerRef.current.currentTime;
             if (Math.abs(playerTime - current_time) > 1) {
@@ -115,6 +117,7 @@ export function Channel() {
                 <SearchInput />
             </Header>
             <div className={styles.page_contents}>
+                <div id="search_info"></div>
                 <VideoPlayer
                     ref={playerRef}
                     src={src}

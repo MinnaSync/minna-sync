@@ -1,6 +1,7 @@
 import styles from './Skeleton.module.scss';
 
 type SkeletonProps = {
+    className?: string;
     width?: string | number;
     height?: string | number;
     type: 'rect' | 'circle';
@@ -13,7 +14,7 @@ export function Skeleton(props: SkeletonProps & { children?: React.ReactNode }) 
     return (<>
         { type === 'circle' &&
             <div
-                className={`${styles.skeletonWrapper} ${styles.circle} ${styles[animation]}`}
+                className={`${styles.skeletonWrapper} ${styles.circle} ${styles[animation]} ${props.className}`}
                 style={{
                     width: props.width,
                     height: props.height,
@@ -25,7 +26,7 @@ export function Skeleton(props: SkeletonProps & { children?: React.ReactNode }) 
 
         { type === 'rect' &&
             <div
-                className={`${styles.skeletonWrapper} ${styles.rect} ${styles[animation]}`}
+                className={`${styles.skeletonWrapper} ${styles.rect} ${styles[animation]} ${props.className}`}
                 style={{
                     width: props.width,
                     height: props.height,

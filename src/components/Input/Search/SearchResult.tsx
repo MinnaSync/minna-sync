@@ -1,13 +1,21 @@
-import { memo, useCallback,  useState } from "react";
+import { memo, useCallback } from "react";
 
 import { Typography } from "#/components/Typography/Typography";
 import { ClosedCaptionIcon, MicrophoneIcon } from "#/components/Icons/Icons";
 
 import styles from "./SearchResult.module.scss";
-import { AnimeQueuer } from "#/components/Modals/AnimeQueuer/AnimeQueuer";
+import { InfoContainer } from "#/portals/SeriesInfo/InfoContainer";
 
 export type SearchResultProps = {
     id: string;
+
+    displayPage: boolean;
+    provider: "animepahe";
+    resource: "anilist";
+
+    handleClose: () => void;
+    handleOpen: () => void;
+
     title: string;
     image: string;
     type: string;
@@ -18,17 +26,17 @@ export type SearchResultProps = {
     };
 };
 
-export const SearchResult = memo(({ id, title, image, type, episodes, nsfw }: SearchResultProps) => {
-    const [ openModal, setOpenModal ] = useState(false);
-
+export const SearchResult = memo(({
+    id,
+    displayPage, provider, resource, handleOpen, handleClose,
+    title, image, type, episodes, nsfw
+}: SearchResultProps) => {
     const handleClick = useCallback(() => {
-        setOpenModal(true);
-    }, []);
+        if (displayPage) return;
+        
+        handleOpen();
+    }, [displayPage]);
 
-    const handleClose = useCallback(() => {
-        setOpenModal(false);
-    }, []);
-    
     return (<>
         <div className={styles.search_result} onClick={handleClick}>
             <img className={styles.image} src={image} />
@@ -75,6 +83,11 @@ export const SearchResult = memo(({ id, title, image, type, episodes, nsfw }: Se
                 </div>
             </div>
         </div>
-        {openModal && <AnimeQueuer id={id} onClose={handleClose} />}
+        {displayPage && <InfoContainer
+            id={id!}
+            provider={provider}
+            resource={resource}
+            onClose={handleClose}
+        />}
     </>);
 });

@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router";
 import { QueryClientProvider, QueryClient } from "react-query";
-import { Channel } from "./pages/channel/Channel";
+import { Channel } from "./pages/Channel/Channel";
 import { WebsocketProvider } from "./providers/WebsocketProvider";
 
 const queryClient = new QueryClient();

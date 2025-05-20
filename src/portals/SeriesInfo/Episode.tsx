@@ -43,7 +43,6 @@ export function Episode({ id, series, title, poster, number, thumbnail }: Episod
             series: series,
             url: info.jpn.find((r) => r.resolution === "1080")?.link,
             poster_image_url: poster,
-            // subtitles: info.subtitles?.find((s) => s.lang === "English")?.url,
         });
     }, [isFetched])
 
