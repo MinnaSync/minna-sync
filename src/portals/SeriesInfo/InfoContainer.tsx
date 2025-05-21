@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useInfiniteQuery } from "react-query";
 import parse from 'html-react-parser';
-import { AnimeInfo } from "api-types";
+import { AnimeInfo } from "@minnasync/api-types";
 
 import styles from "./InfoContainer.module.scss";
 import { Typography } from "#/components/Typography/Typography";
@@ -243,7 +243,7 @@ export function InfoContainer({ id, provider, resource, queueRef, onQueue, onClo
                                             title={episode.title!}
                                             poster={info?.pages[0]?.meta.poster!}
                                             number={episode.episode as number}
-                                            thumbnail={`${import.meta.env.VITE_API_URL}proxied/${episode.preview}`}
+                                            thumbnail={`${import.meta.env.VITE_PROXY_URL}/url/${episode.preview}`}
                                             queueRef={queueRef}
                                             onQueue={onQueue}
                                         />

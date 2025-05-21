@@ -101,7 +101,7 @@ export function SearchInput({ provider, resource, onClickResult }: SearchInputPr
                 results.map(({ id, title, poster, type}) => ({
                     id, provider, resource,
                     title: title,
-                    image: `${import.meta.env.VITE_API_URL}proxied/${poster}`,
+                    image: `${import.meta.env.VITE_PROXY_URL}/url/${poster}`,
                     type: type,
                 }))
             );
