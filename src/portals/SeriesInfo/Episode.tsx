@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { useQuery } from "react-query";
 
 import { MediaUpdateEvent } from "#/util/ws/types";
@@ -18,7 +18,7 @@ type EpisodeProps = {
     onQueue: (info: MediaUpdateEvent) => void;
 };
 
-export function Episode({ id, series, title, poster, number, thumbnail, queueRef, onQueue }: EpisodeProps) {
+export const Episode = memo(({ id, series, title, poster, number, thumbnail, queueRef, onQueue }: EpisodeProps) => {
     const { data: episodeInfo, refetch } = useQuery({
         enabled: !!queueRef.current.has(id),
         queryKey: ["episodeInfo", id],
@@ -59,4 +59,4 @@ export function Episode({ id, series, title, poster, number, thumbnail, queueRef
             </div>
         </div>
     </>);
-}
+});
