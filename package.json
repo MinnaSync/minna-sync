@@ -30,8 +30,8 @@
   },
   "type": "module",
   "dependencies": {
+    "@minnasync/api-types": "0.0.1",
     "@vidstack/react": "^1.12.13",
-    "api-types": "link:api-types",
     "hls.js": "1.5.20",
     "html-react-parser": "^5.2.5",
     "neverthrow": "^8.2.0",

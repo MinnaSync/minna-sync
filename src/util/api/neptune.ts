@@ -1,4 +1,4 @@
-import type { AnimeSearch, AnimeInfo, AnimeStreams } from "api-types";
+import type { AnimeSearch, AnimeInfo, AnimeStreams } from "@minnasync/api-types";
 import { errAsync, okAsync } from "neverthrow";
 
 const BASE_URL = import.meta.env.VITE_NEPTUNE_URL;
