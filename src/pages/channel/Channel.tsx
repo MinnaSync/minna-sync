@@ -81,7 +81,7 @@ export function Channel() {
 
             handleTempSuppress();
 
-            setSrc(`http://localhost:8443/m3u8/${now_playing.url}`);
+            setSrc(`${import.meta.env.VITE_API_URL}m3u8/${now_playing.url}`);
             setTime(now_playing.current_time);
             setPaused(now_playing.paused);
             setSeries(now_playing.series);
@@ -95,7 +95,7 @@ export function Channel() {
         websocket.on("media_changed", ({ url, series, title }: MediaUpdateEvent) => {
             handleTempSuppress();
 
-            setSrc(`http://localhost:8443/m3u8/${url}`);
+            setSrc(`${import.meta.env.VITE_API_URL}m3u8/${url}`);
             setTime(0);
             setPaused(false);
             setSeries(series);

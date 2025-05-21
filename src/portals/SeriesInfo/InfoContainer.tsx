@@ -243,7 +243,7 @@ export function InfoContainer({ id, provider, resource, queueRef, onQueue, onClo
                                             title={episode.title!}
                                             poster={info?.pages[0]?.meta.poster!}
                                             number={episode.episode as number}
-                                            thumbnail={`http://localhost:8443/proxied/${episode.preview}`}
+                                            thumbnail={`${import.meta.env.VITE_API_URL}proxied/${episode.preview}`}
                                             queueRef={queueRef}
                                             onQueue={onQueue}
                                         />
