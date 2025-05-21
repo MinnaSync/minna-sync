@@ -61,7 +61,6 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
 
     const handlePausePlay = useCallback(() => {
         remote.togglePaused();
-        setIsPaused((p) => !p);
     }, []);
 
     const handleTimerUpdate = useCallback(() => {
@@ -155,6 +154,9 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
         player?.addEventListener("seeking", () => remote.pause(), { signal });
         player?.addEventListener("seeked", () => remote.play(), { signal });
         player?.addEventListener("ended", () => remote.pause(), { signal });
+
+        player?.addEventListener("playing", () => setIsPaused(false), { signal });
+        player?.addEventListener("pause", () => setIsPaused(true), { signal });
     }, []);
 
     return (<>
