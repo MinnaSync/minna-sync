@@ -1,6 +1,6 @@
-import { useCallback, memo, useEffect, useRef, useState } from "react";
+import { useCallback, memo } from "react";
 
-import { PlayIcon, PauseIcon, ReplayIcon, FullscreenIcon, VolumeMuteIcon, VolumeMaxIcon, VolumeMinIcon } from "#/components/Icons/Icons";
+import { PlayIcon, PauseIcon, ReplayIcon, FullscreenIcon } from "#/components/Icons/Icons";
 import styles from "./Controls.module.scss";
 
 type BaseControlButtonProps = {
