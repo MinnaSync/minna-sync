@@ -5,4 +5,4 @@ WORKDIR /neptune
 COPY . /neptune/
 
 RUN bun install
-RUN bun build
+RUN bun run build
