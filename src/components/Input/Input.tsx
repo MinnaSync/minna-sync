@@ -9,7 +9,7 @@ type InputProps = {
 
 export const Input = memo(({ ref, placeholder, className }: InputProps) => {
     return (<>
-        <div className={`${styles.input_container} ${className}`}>
+        <div className={`${styles.input_container}${className ? ` ${className}` : ''}`}>
             <input ref={ref} type="text" placeholder={placeholder} />
         </div>
     </>);
