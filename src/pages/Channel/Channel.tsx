@@ -170,6 +170,11 @@ export function Channel() {
                         `${series} - ${title}`
                     }
                     onReady={() => {
+                        /**
+                         * Prevent from emitting a state_updated event until seeking is done.
+                         */
+                        let seekDebounce: number | null = null;
+
                         const controller = new AbortController();
                         const signal = controller.signal;
 
@@ -178,7 +183,17 @@ export function Channel() {
                         player?.addEventListener("playing", () => handlePausePlay(false), { signal });
                         player?.addEventListener("pause", () => handlePausePlay(true), { signal });
 
-                        player?.addEventListener("seeked", () => handleTimeUpdate(player.currentTime), { signal });
+                        player?.addEventListener("seeked", () => {
+                            if (seekDebounce) {
+                                clearTimeout(seekDebounce);
+                            }
+
+                            // @ts-ignore
+                            seekDebounce = setTimeout(() => {
+                                handleTimeUpdate(player.currentTime);
+                                seekDebounce = null;
+                            }, 500);
+                        }, { signal });
 
                         return () => controller.abort();
                     }}
