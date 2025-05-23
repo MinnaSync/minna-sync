@@ -10,7 +10,7 @@ import { Typography } from "#/components/Typography/Typography";
 import { MediaUpdateEvent } from "#/util/ws/types";
 import neptune from "#/util/api/neptune";
 import { Skeleton } from "#/components/Skeleton/Skeleton";
-import { CloseIcon, WarningIcon } from "#/components/Icons/Icons";
+import { CloseIcon, UpArrowIcon, WarningIcon } from "#/components/Icons/Icons";
 import Button from "#/components/Button/Button";
 import { Episode } from "./Episode";
 
@@ -37,8 +37,10 @@ function isSensitive(info: AnimeInfo['meta']) {
 
 export function InfoContainer({ id, provider, resource, queueRef, onQueue, onClose }: InfoContainerProps) {
     const containerRef = useRef<HTMLDivElement | null>(null);
+    const detailsRef = useRef<HTMLDivElement | null>(null);
 
     const [ nsfwFlagAcknowledged, setNsfwFlagAcknowledged ] = useState(false);
+    const [ displayBackToTop, setDisplayBackToTop ] = useState(false);
 
     const {
         data: info,
@@ -70,6 +72,14 @@ export function InfoContainer({ id, provider, resource, queueRef, onQueue, onClo
         }
     }, [isFetchingNextPage, hasNextPage, isLoading, fetchNextPage]);
 
+    const handleBackToTop = useCallback(() => {
+        if (!detailsRef.current) return;
+        containerRef.current?.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }, []);
+
     useEffect(() => {
         let debounceTimer: number | null = null;
 
@@ -86,6 +96,12 @@ export function InfoContainer({ id, provider, resource, queueRef, onQueue, onClo
 
         document.addEventListener("keyup", handleKeyDown, { signal });
         containerRef.current?.addEventListener("scroll", () => {
+            if (containerRef.current!.scrollTop > (detailsRef.current!.offsetHeight - 250)) {
+                setDisplayBackToTop(true);
+            } else {
+                setDisplayBackToTop(false);
+            }
+
             if (debounceTimer) {
                 clearTimeout(debounceTimer);
             }
@@ -120,6 +136,12 @@ export function InfoContainer({ id, provider, resource, queueRef, onQueue, onClo
                         Close (ESC)
                     </Typography>
                 </div>
+
+                {displayBackToTop &&
+                    <div className={styles.back_to_top} onClick={handleBackToTop}>
+                        <UpArrowIcon />
+                    </div>
+                }
             {!isLoading
                 ? <>
                     {isSensitive(info?.pages[0]?.meta!) && !nsfwFlagAcknowledged &&
@@ -154,7 +176,7 @@ export function InfoContainer({ id, provider, resource, queueRef, onQueue, onClo
                             </div>
                         </div>
                     }
-                    <div className={styles.details}>
+                    <div ref={detailsRef} className={styles.details}>
                         <img
                             className={styles.poster}
                             src={info?.pages[0]?.meta.poster!}
