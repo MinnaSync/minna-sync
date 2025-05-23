@@ -72,6 +72,19 @@ export function Channel() {
     const [ openedPage, setOpenedPage ] = useState<string | null>(null);
 
     useEffect(() => {
+        const handleTimeUpdate = ({ current_time, paused }: TimeUpdateEvent) => {
+            if (!playerRef.current) return;
+
+            const playerTime = playerRef.current.currentTime;
+            if (Math.abs(playerTime - current_time) > 1) {
+                playerRef.current.currentTime = current_time;
+            };
+
+            if (playerRef.current.paused !== paused) {
+                paused ? playerRef.current.pause() : playerRef.current.play();
+            }
+        }
+
         websocket.on("connected", () => {
             websocket.emit("join_room", channelId);
         });
@@ -106,17 +119,12 @@ export function Channel() {
             queuedRef.current.add(id);
         });
 
-        websocket.on("state_updated", ({ current_time, paused }: TimeUpdateEvent) => {
-            if (!playerRef.current) return;
+        websocket.on("state_sync", (e: TimeUpdateEvent) => {
+            handleTimeUpdate(e);
+        });
 
-            const playerTime = playerRef.current.currentTime;
-            if (Math.abs(playerTime - current_time) > 1) {
-                playerRef.current.currentTime = current_time;
-            };
-
-            if (playerRef.current.paused !== paused) {
-                paused ? playerRef.current.pause() : playerRef.current.play();
-            }
+        websocket.on("state_updated", (e: TimeUpdateEvent) => {
+            handleTimeUpdate(e);
         });
 
         return () => {

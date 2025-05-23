@@ -151,7 +151,6 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
         document.addEventListener("touchmove", handleSeeking, { signal });
         document.addEventListener("touchend", handleStopSeeking, { signal });
 
-        player?.addEventListener("seeking", () => remote.pause(), { signal });
         player?.addEventListener("ended", () => remote.pause(), { signal });
 
         player?.addEventListener("playing", () => setIsPaused(false), { signal });
