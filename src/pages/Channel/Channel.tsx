@@ -97,8 +97,8 @@ export function Channel() {
             setSrc(`${import.meta.env.VITE_PROXY_URL}/m3u8/${now_playing.url}`);
             setTime(now_playing.current_time);
             setPaused(now_playing.paused);
-            setSeries(now_playing.series);
-            setTitle(now_playing.title);
+            setSeries(now_playing.series || "Unknown Series");
+            setTitle(now_playing.title || "No title");
 
             for (const media of queue) {
                 queuedRef.current.add(media.id);
@@ -111,8 +111,8 @@ export function Channel() {
             setSrc(`${import.meta.env.VITE_PROXY_URL}/m3u8/${url}`);
             setTime(0);
             setPaused(false);
-            setSeries(series);
-            setTitle(title);
+            setSeries(series  || "Unknown Series");
+            setTitle(title || "No title");
         });
 
         websocket.on("queue_updated", ({ id }: MediaUpdateEvent) => {

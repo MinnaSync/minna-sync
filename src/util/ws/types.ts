@@ -31,11 +31,11 @@ export type GenericMedia = {
     /**
      * The title of the currently playing media.
      */
-    title: string;
+    title?: string | null;
     /**
      * The series of the currently playing media.
      */
-    series: string;
+    series?: string | null;
     /**
      * The URL associated with the media.
      */
@@ -43,7 +43,7 @@ export type GenericMedia = {
     /**
      * The poster image of the anime series.
      */
-    poster_image_url: string;
+    poster_image_url?: string | null;
 }
 
 export type GenericPlayingMedia = {
