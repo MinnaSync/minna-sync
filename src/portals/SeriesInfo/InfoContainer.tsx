@@ -261,7 +261,12 @@ export function InfoContainer({ id, provider, resource, queueRef, onQueue, onClo
                                         <Episode
                                             key={episode.id}
                                             id={episode.id}
-                                            series={info?.pages[0]?.meta.title.english!}
+                                            series={(
+                                                info?.pages[0]?.meta.title.english ||
+                                                info?.pages[0]?.meta.title.romaji ||
+                                                info?.pages[0]?.meta.title.native ||
+                                                'Unknown'
+                                            )}
                                             title={episode.title!}
                                             poster={info?.pages[0]?.meta.poster!}
                                             number={episode.episode as number}

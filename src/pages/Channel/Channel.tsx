@@ -153,7 +153,6 @@ export function Channel() {
                     resource={resource}
                     queueRef={queuedRef}
                     onQueue={(info) => {
-                        console.log(true);
                         if (queuedRef.current.has(info.id)) return;
 
                         websocket.emit("queue_media", info);
