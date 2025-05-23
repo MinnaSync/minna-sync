@@ -9,10 +9,4 @@ export default defineConfig({
           generateScopedName: '[local]_[hash:base64:6]',
       },
   },
-  server: {
-      port: 8080,
-      strictPort: true,
-      host: true,
-      origin: "http://0.0.0.0:8080",
-  },
 })
