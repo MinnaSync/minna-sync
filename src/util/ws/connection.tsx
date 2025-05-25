@@ -60,7 +60,7 @@ export class Websocket {
             this.reconnecting = false;
             this.connected = true;
 
-            this.emit("connection", null, { queue: false });
+            this.emit("connection", {});
 
             for (const { event, data } of this.queue) {
                 this.ws?.send(JSON.stringify({ event, data }));
@@ -187,7 +187,7 @@ export class Websocket {
      * @param data The data that needs to be sent.
      * @param {EmitOptions} options Extra options.
      */
-    public emit(event: string, data: any, options?: EmitOptions) {
+    public emit(event: string, data: { [k: string]: any }, options?: EmitOptions) {
         if (this.ws?.readyState !== this.ws?.OPEN) {
             if (!options?.queue) return;
             this.queue.push({ event, data });
