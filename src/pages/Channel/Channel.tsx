@@ -72,6 +72,9 @@ export function Channel() {
     const [ openedPage, setOpenedPage ] = useState<string | null>(null);
 
     useEffect(() => {
+        const controller = new AbortController();
+        const signal = controller.signal;
+
         const handleTimeUpdate = ({ current_time, paused }: TimeUpdateEvent) => {
             if (!playerRef.current) return;
 
@@ -87,7 +90,7 @@ export function Channel() {
 
         websocket.on("connected", () => {
             websocket.emit("join_room", channelId);
-        });
+        }, { signal });
 
         websocket.on("room_data", ({ now_playing, queue }: RoomDataEvent) => {
             if (!now_playing || !playerRef.current) return;
@@ -103,7 +106,7 @@ export function Channel() {
             for (const media of queue) {
                 queuedRef.current.add(media.id);
             }
-        });
+        }, { signal });
 
         websocket.on("media_changed", ({ url, series, title }: MediaUpdateEvent) => {
             handleTempSuppress();
@@ -113,27 +116,21 @@ export function Channel() {
             setPaused(false);
             setSeries(series  || "Unknown Series");
             setTitle(title || "No title");
-        });
+        }, { signal });
 
         websocket.on("queue_updated", ({ id }: MediaUpdateEvent) => {
             queuedRef.current.add(id);
-        });
+        }, { signal });
 
         websocket.on("state_sync", (e: TimeUpdateEvent) => {
             handleTimeUpdate(e);
-        });
+        }, { signal });
 
         websocket.on("state_updated", (e: TimeUpdateEvent) => {
             handleTimeUpdate(e);
-        });
+        }, { signal });
 
-        return () => {
-            websocket.off("connected");
-            websocket.off("room_data");
-            websocket.off("queue_updated");
-            websocket.off("media_changed");
-            websocket.off("state_updated");
-        }
+        return () => controller.abort();
     }, []);
 
     return (<>

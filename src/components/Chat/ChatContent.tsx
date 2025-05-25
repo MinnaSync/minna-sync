@@ -67,6 +67,9 @@ export const ChatContent = memo(() => {
     }, [messages]);
 
     useEffect(() => {
+        const controller = new AbortController();
+        const signal = controller.signal;
+
         websocket.on("user_joined", (data: UserJoinEvent) => {
             setMessages((p) => [...p, {
                 type: 'notification',
@@ -74,7 +77,7 @@ export const ChatContent = memo(() => {
                 accent: 'green',
                 message: `${data.username} has joined the channel.`,
             }]);
-        });
+        }, { signal });
 
         websocket.on("user_left", (data: UserLeftEvent) => {
             setMessages((p) => [...p, {
@@ -83,7 +86,7 @@ export const ChatContent = memo(() => {
                 accent: 'red',
                 message: `${data.username} has left the channel.`,
             }]);
-        });
+        }, { signal });
 
         websocket.on("receive_message", ({ username, message }: UserMessageEvent) => {
             setMessages((p) => [...p, {
@@ -91,7 +94,7 @@ export const ChatContent = memo(() => {
                 username: username,
                 message: message
             }]);
-        });
+        }, { signal });
 
         websocket.on('queue_updated', ({ title, series }: MediaUpdateEvent) => {
             setMessages((p) => [...p, {
@@ -100,7 +103,7 @@ export const ChatContent = memo(() => {
                 accent: 'primary',
                 message: `${series} - ${title} has been added to the queue.`,
             }]);
-        });
+        }, { signal });
 
         websocket.on('media_changed', ({ title, series }: MediaChangedEvent) => {
             setMessages((p) => [...p, {
@@ -109,15 +112,9 @@ export const ChatContent = memo(() => {
                 accent: 'primary',
                 message: `${series} - ${title} is now playing.`,
             }]);
-        });
+        }, { signal });
 
-        return () => {
-            websocket.off("user_joined");
-            websocket.off("user_left");
-            websocket.off("receive_message");
-            websocket.off("queue_updated");
-            websocket.off("media_changed");
-        };
+        return () => controller.abort();
     }, []);
     
     return (<>
@@ -131,21 +128,28 @@ export const ChatContent = memo(() => {
                 onMouseDown={(e) => e.preventDefault()}
             ></div>
             <ol ref={messagesRef} className={styles.messages}>
-                {messages.map((m, i) =>
-                    <Fragment key={i}>
-                        {m.type === 'message' && <ChatMessage
-                            username={m.username}
-                            children={m.message}
-                        />}
-                        {m.type === 'notification' && <ChatNotification
-                            icon={m.icon}
-                            accent={m.accent}
-                            children={<>
-                                <Typography tag="span">{m.message}</Typography>
-                            </>}
-                        />}
-                    </Fragment>
-                )}
+                {websocket.connected
+                    ? messages.map((m, i) =>
+                        <Fragment key={i}>
+                            {m.type === 'message' &&
+                                <ChatMessage username={m.username}>
+                                    {m.message}
+                                </ChatMessage>
+                            }
+                            {m.type === 'notification' &&
+                                <ChatNotification
+                                    icon={m.icon}
+                                    accent={m.accent}
+                                >
+                                    <Typography tag="span">{m.message}</Typography>
+                                </ChatNotification>
+                            }
+                        </Fragment>
+                    )
+                    : <>
+                        
+                    </>
+                }
             </ol>
             <div className={styles.chat_input}>
                 <form onSubmit={(e) => {
