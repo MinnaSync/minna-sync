@@ -76,7 +76,7 @@ export class Websocket {
         }, { signal: this.signal });
 
         this.signal.addEventListener("abort", () => {
-            this.disconnect();;
+            this.disconnect();
         }, { once: true });
 
         return this;
@@ -102,19 +102,27 @@ export class Websocket {
         this.reconnecting = false;
     }
 
-    public on(event: string, callback: (data: any) => void) {
+    public on(event: string, callback: (data: any) => void, opts?: { signal: AbortSignal }) {
         if (!this.handlers.has(event)) {
             this.handlers.set(event, new Set());
         }
 
-        this.handlers.get(event)!.add(callback);
+        this.handlers.get(event)?.add(callback);
+
+        opts?.signal.addEventListener("abort", () => {
+            this.off(event, callback);
+        }, { once: true });
     }
 
-    public once(event: string, callback: (data: any) => void) {
+    public once(event: string, callback: (data: any) => void, opts?: { signal: AbortSignal }) {
         this.on(event, (data: any) => {
-            this.off(event);
+            this.off(event, callback);
             callback(data);
         });
+        
+        opts?.signal.addEventListener("abort", () => {
+            this.off(event, callback);
+        }, { once: true });
     }
 
     public off(event: string, callback?: (data: any) => void) {
