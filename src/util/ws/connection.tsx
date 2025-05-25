@@ -1,4 +1,17 @@
-import { type MessageEvent } from "./types";
+import type {
+    ConnectionEvent,
+    ConnectedEvent,
+    JoinRoomEvent,
+    PlayerStateEvent,
+    MessageEvent,
+    MediaUpdateEvent,
+    UserJoinEvent,
+    UserLeftEvent,
+    UserMessageEvent,
+    GenericMessageEvent,
+    RoomDataEvent,
+    TimeUpdateEvent
+} from "./types";
 import { tryCatch } from "#/util/util";
 
 type EmitOptions = {
@@ -7,7 +20,7 @@ type EmitOptions = {
      * @default false
      */
     queue?: boolean;
-}
+};
 
 type ListenerOptions = {
     /**
@@ -15,7 +28,27 @@ type ListenerOptions = {
      * This will automatically call off() with the callback to remove the specific event.
      */
     signal?: AbortSignal;
-}
+};
+
+type EmitPayloads = {
+    connection: ConnectionEvent;
+    join_room: JoinRoomEvent;
+    player_state: PlayerStateEvent;
+    queue_media: MediaUpdateEvent;
+    send_message: GenericMessageEvent;
+};
+
+type ResponsePayloads = {
+    connected: ConnectedEvent;
+    room_data: RoomDataEvent;
+    user_joined: UserJoinEvent;
+    user_left: UserLeftEvent;
+    receive_message: UserMessageEvent;
+    queue_updated: MediaUpdateEvent;
+    media_changed: MediaUpdateEvent;
+    state_sync: TimeUpdateEvent;
+    state_updated: TimeUpdateEvent;
+};
 
 export class Websocket {
     private url: string;
@@ -57,6 +90,8 @@ export class Websocket {
         this.ws = new WebSocket(this.url);
 
         this.ws.addEventListener("open", () => {
+            console.debug('[ws] connected');
+
             this.reconnecting = false;
             this.connected = true;
 
@@ -68,7 +103,7 @@ export class Websocket {
         }, { signal: this.signal });
 
         this.ws.addEventListener("message", ({ data }) => {
-            console.debug("Received message from websocket", data);
+            console.debug('[ws] received message', data);
 
             const { result, error } = tryCatch(() => JSON.parse(data) as MessageEvent);
 
@@ -83,15 +118,21 @@ export class Websocket {
         }, { signal: this.signal });
 
         this.ws.addEventListener("close", () => {
+            console.debug('[ws] connection closed');
+
             this.connected = false;
             this.reconnect();
         }, { signal: this.signal });
 
-        this.ws.addEventListener("error", () => {
+        this.ws.addEventListener("error", (msg) => {
+            console.debug('[ws] error', msg);
+
             this.connected = false;
         }, { signal: this.signal });
 
         this.signal.addEventListener("abort", () => {
+            console.debug('[ws] connection aborted');
+
             this.disconnect();
         }, { once: true });
 
@@ -133,7 +174,7 @@ export class Websocket {
      * @param callback The callback for when the event is emitted.
      * @param {ListenerOptions} opts Extra options.
      */
-    public on(event: string, callback: (data: any) => void, opts?: ListenerOptions) {
+    public on<E extends keyof ResponsePayloads>(event: E, callback: (data: ResponsePayloads[E]) => void, opts?: ListenerOptions) {
         if (!this.handlers.has(event)) {
             this.handlers.set(event, new Set());
         }
@@ -151,7 +192,7 @@ export class Websocket {
      * @param callback The callback for when the event is emitted.
      * @param {ListenerOptions} opts Extra options.
      */
-    public once(event: string, callback: (data: any) => void, opts?: ListenerOptions) {
+    public once<E extends keyof ResponsePayloads>(event: E, callback: (data: ResponsePayloads[E]) => void, opts?: ListenerOptions) {
         this.on(event, (data: any) => {
             this.off(event, callback);
             callback(data);
@@ -187,7 +228,7 @@ export class Websocket {
      * @param data The data that needs to be sent.
      * @param {EmitOptions} options Extra options.
      */
-    public emit(event: string, data: { [k: string]: any }, options?: EmitOptions) {
+    public emit<E extends keyof EmitPayloads>(event: E, data: EmitPayloads[E], options?: EmitOptions) {
         if (this.ws?.readyState !== this.ws?.OPEN) {
             if (!options?.queue) return;
             this.queue.push({ event, data });
@@ -195,6 +236,9 @@ export class Websocket {
             return;
         }
 
-        this.ws?.send(JSON.stringify({ event, data }));
+        const emitData = JSON.stringify({ event, data });
+
+        console.debug('[ws] sending message', emitData);
+        this.ws?.send(emitData);
     }
 }

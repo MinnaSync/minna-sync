@@ -2,7 +2,6 @@ import { useEffect, useState, useRef, memo, Fragment } from "react";
 import { useParams } from "react-router";
 
 import { useWebsocket } from "#/providers/WebsocketProvider";
-import { MediaChangedEvent, MediaUpdateEvent, UserJoinEvent, UserLeftEvent, type UserMessageEvent } from "#/util/ws/types";
 
 import styles from "./ChatContent.module.scss";
 import { ChatMessage } from "./ChatMessage";
@@ -70,7 +69,7 @@ export const ChatContent = memo(() => {
         const controller = new AbortController();
         const signal = controller.signal;
 
-        websocket.on("user_joined", (data: UserJoinEvent) => {
+        websocket.on("user_joined", (data) => {
             setMessages((p) => [...p, {
                 type: 'notification',
                 icon: <EnterIcon />,
@@ -79,7 +78,7 @@ export const ChatContent = memo(() => {
             }]);
         }, { signal });
 
-        websocket.on("user_left", (data: UserLeftEvent) => {
+        websocket.on("user_left", (data) => {
             setMessages((p) => [...p, {
                 type: 'notification',
                 icon: <LeaveIcon />,
@@ -88,7 +87,7 @@ export const ChatContent = memo(() => {
             }]);
         }, { signal });
 
-        websocket.on("receive_message", ({ username, message }: UserMessageEvent) => {
+        websocket.on("receive_message", ({ username, message }) => {
             setMessages((p) => [...p, {
                 type: 'message',
                 username: username,
@@ -96,7 +95,7 @@ export const ChatContent = memo(() => {
             }]);
         }, { signal });
 
-        websocket.on('queue_updated', ({ title, series }: MediaUpdateEvent) => {
+        websocket.on('queue_updated', ({ title, series }) => {
             setMessages((p) => [...p, {
                 type: 'notification',
                 icon: <QueueIcon />,
@@ -105,7 +104,7 @@ export const ChatContent = memo(() => {
             }]);
         }, { signal });
 
-        websocket.on('media_changed', ({ title, series }: MediaChangedEvent) => {
+        websocket.on('media_changed', ({ title, series }) => {
             setMessages((p) => [...p, {
                 type: 'notification',
                 icon: <PlayIcon />,

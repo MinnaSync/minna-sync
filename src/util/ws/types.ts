@@ -16,16 +16,34 @@ type GenericUser = {
     username: string;
 }
 
+export type ConnectionEvent = {};
+
+export type ConnectedEvent = {};
+
+export type JoinRoomEvent = {
+    /**
+     * The channel that was joined.
+     */
+    channel_id: string;
+};
+
+export type PlayerStateEvent = 
+    { paused: boolean; } |
+    { current_time: number; } |
+    { current_time: number; paused: boolean; };
+
 export type UserJoinEvent = GenericUser;
 
 export type UserLeftEvent = GenericUser;
 
-export interface UserMessageEvent extends GenericUser {
+export interface GenericMessageEvent {
     /**
      * The message that the user sent.
      */
     message: string;
 };
+
+export type UserMessageEvent = GenericUser & GenericMessageEvent;
 
 export type GenericMedia = {
     /**

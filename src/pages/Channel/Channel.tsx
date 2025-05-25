@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "react-router";
 
-import { MediaUpdateEvent, RoomDataEvent, TimeUpdateEvent } from "#/util/ws/types";
+import { TimeUpdateEvent } from "#/util/ws/types";
 
 import { Header } from "#/components/Header/Header";
 import { ChatContent } from "#/components/Chat/ChatContent";
@@ -89,10 +89,12 @@ export function Channel() {
         }
 
         websocket.on("connected", () => {
-            websocket.emit("join_room", channelId);
+            websocket.emit("join_room", {
+                channel_id: channelId!,
+            });
         }, { signal });
 
-        websocket.on("room_data", ({ now_playing, queue }: RoomDataEvent) => {
+        websocket.on("room_data", ({ now_playing, queue }) => {
             if (!now_playing || !playerRef.current) return;
 
             handleTempSuppress();
@@ -108,7 +110,7 @@ export function Channel() {
             }
         }, { signal });
 
-        websocket.on("media_changed", ({ url, series, title }: MediaUpdateEvent) => {
+        websocket.on("media_changed", ({ url, series, title }) => {
             handleTempSuppress();
 
             setSrc(`${import.meta.env.VITE_PROXY_URL}/m3u8/${url}`);
@@ -118,15 +120,15 @@ export function Channel() {
             setTitle(title || "No title");
         }, { signal });
 
-        websocket.on("queue_updated", ({ id }: MediaUpdateEvent) => {
+        websocket.on("queue_updated", ({ id }) => {
             queuedRef.current.add(id);
         }, { signal });
 
-        websocket.on("state_sync", (e: TimeUpdateEvent) => {
+        websocket.on("state_sync", (e) => {
             handleTimeUpdate(e);
         }, { signal });
 
-        websocket.on("state_updated", (e: TimeUpdateEvent) => {
+        websocket.on("state_updated", (e) => {
             handleTimeUpdate(e);
         }, { signal });
 
