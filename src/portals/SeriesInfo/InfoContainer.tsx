@@ -17,7 +17,6 @@ import { Episode } from "./Episode";
 type InfoContainerProps = {
     id: string;
     provider: "animepahe";
-    resource: "anilist";
 
     queueRef: React.RefObject<Set<string>>;
     onQueue: (info: MediaUpdateEvent) => void;
@@ -35,7 +34,7 @@ function isSensitive(info: AnimeInfo['meta']) {
     return sensitiveGenres.some((genre) => info.genres.includes(genre));
 }
 
-export function InfoContainer({ id, provider, resource, queueRef, onQueue, onClose }: InfoContainerProps) {
+export function InfoContainer({ id, provider, queueRef, onQueue, onClose }: InfoContainerProps) {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const detailsRef = useRef<HTMLDivElement | null>(null);
 
@@ -50,7 +49,7 @@ export function InfoContainer({ id, provider, resource, queueRef, onQueue, onClo
         isFetchingNextPage,
     } = useInfiniteQuery({
         queryKey: ["info", id],
-        queryFn: async ({ pageParam = 1 }) => await neptune.info({ id, provider, resource, page: pageParam.toString() }).then((r) =>
+        queryFn: async ({ pageParam = 1 }) => await neptune.info({ id, provider, page: pageParam.toString() }).then((r) =>
             r.isOk() ? r.value : undefined
         ),
         getNextPageParam(lastPage, pages) {

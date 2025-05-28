@@ -20,11 +20,10 @@ export function Channel() {
 
     const queuedRef = useRef(new Set<string>());
 
-    const channelId = useParams().channelId;
+    const channelId = useParams().channelId!;
     const websocket = useWebsocket();
 
     const [ provider, _ ] = useState<"animepahe">("animepahe");
-    const [ resource, __ ] = useState<"anilist">("anilist");
 
     const [ src, setSrc ] = useState("");
     const [ time, setTime ] = useState(0);
@@ -90,7 +89,7 @@ export function Channel() {
 
         websocket.on("connected", () => {
             websocket.emit("join_room", {
-                channel_id: channelId!,
+                channel_id: channelId,
             });
         }, { signal });
 
@@ -140,7 +139,6 @@ export function Channel() {
             <Header>
                 <SearchInput
                     provider={provider}
-                    resource={resource}
                     onClickResult={(id) => setOpenedPage(id)}
                 />
             </Header>
@@ -149,7 +147,6 @@ export function Channel() {
                 {openedPage && <InfoContainer
                     id={openedPage!}
                     provider={provider}
-                    resource={resource}
                     queueRef={queuedRef}
                     onQueue={(info) => {
                         if (queuedRef.current.has(info.id)) return;

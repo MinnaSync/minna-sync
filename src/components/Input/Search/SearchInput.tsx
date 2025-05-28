@@ -11,11 +11,10 @@ import { Typography } from "#/components/Typography/Typography";
 
 type SearchInputProps = {
     provider: "animepahe";
-    resource: "anilist";
     onClickResult: (id: string) => void;
 };
 
-export function SearchInput({ provider, resource, onClickResult }: SearchInputProps) {
+export function SearchInput({ provider, onClickResult }: SearchInputProps) {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const [ results, setResults ] = useState<Omit<SearchResultProps, "handleClick">[]>([]);
@@ -99,7 +98,7 @@ export function SearchInput({ provider, resource, onClickResult }: SearchInputPr
 
             sortedResults.push(...
                 results.map(({ id, title, poster, type}) => ({
-                    id, provider, resource,
+                    id, provider,
                     title: title,
                     image: `${import.meta.env.VITE_PROXY_URL}/url/${poster}`,
                     type: type,

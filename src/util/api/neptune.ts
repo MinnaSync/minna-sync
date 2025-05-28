@@ -31,7 +31,7 @@ async function search(searchQuery: string, query: { provider: "animepahe" }) {
     );
 }
 
-async function info(query: { id: string, provider: "animepahe", resource: "anilist", page?: string }) {
+async function info(query: { id: string, provider: "animepahe", page?: string }) {
     return await request<AnimeInfo>(
         'GET', `/anime/info`, {}, query
     );
