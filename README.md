@@ -1,6 +1,9 @@
 # MinnaSync
 MinnaSync is a anime streaming platform that allows you to watch anime together with anyone and everyone.
 
+> [!NOTE]  
+> We do not retain any files on our own servers, everything is streamed from third-party platforms; "MinnaSync" is not affiliated with any of these platforms.
+
 ### Why "MinnaSync"?
 "min'na (みんな)", is the informal way to *say* "everyone" or "all of you" in Japanese. This specific variation was chosen *because* it is informal.
 
