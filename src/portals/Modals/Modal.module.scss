@@ -18,10 +18,11 @@
     align-items: center;
     justify-content: center;
 
-    padding: 0;
+    padding: 25px;
 
-    border: none;
-    background-color: transparent;
+    border: 1px solid var(--border-faint);
+    border-radius: 15px;
+    background-color: var(--modal-background);
     color: var(--text-primary);
 
     animation: open_modal 200ms ease-in-out;

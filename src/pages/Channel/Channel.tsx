@@ -13,6 +13,7 @@ import { useWebsocket } from "#/providers/WebsocketProvider";
 import styles from "./Channel.module.scss"
 import { MediaPlayerInstance, useStore } from "@vidstack/react";
 import { InfoContainer } from "#/portals/SeriesInfo/InfoContainer";
+import { JoinChannel } from "#/components/Modals/JoinChannel/JoinChannel";
 
 export function Channel() {
     const playerRef = useRef<MediaPlayerInstance | null>(null);
@@ -24,6 +25,10 @@ export function Channel() {
     const websocket = useWebsocket();
 
     const [ provider, _ ] = useState<"animepahe">("animepahe");
+
+    const [ displayJoinRoomModal, setDisplayJoinRoomModal ] = useState(false);
+    const [ connected, setConnected ] = useState(false);
+    const [ guestUser, setGuestUser ] = useState<null | string>(null);
 
     const [ src, setSrc ] = useState("");
     const [ time, setTime ] = useState(0);
@@ -71,6 +76,15 @@ export function Channel() {
     const [ openedPage, setOpenedPage ] = useState<string | null>(null);
 
     useEffect(() => {
+        if (!guestUser) return;
+
+        websocket.emit("join_room", {
+            channel_id: channelId,
+            guest_username: guestUser,
+        });
+    }, [guestUser]);
+
+    useEffect(() => {
         const controller = new AbortController();
         const signal = controller.signal;
 
@@ -88,9 +102,8 @@ export function Channel() {
         }
 
         websocket.on("connected", () => {
-            websocket.emit("join_room", {
-                channel_id: channelId,
-            });
+            setConnected(true);
+            setDisplayJoinRoomModal(true);
         }, { signal });
 
         websocket.on("room_data", ({ now_playing, queue }) => {
@@ -135,6 +148,16 @@ export function Channel() {
     }, []);
 
     return (<>
+        {displayJoinRoomModal && <JoinChannel
+            channelId={channelId}
+            onSubmit={({ username }) => {
+                setGuestUser(username);
+                setDisplayJoinRoomModal(false);
+            }}
+            onClose={() => {
+                
+            }}
+        ></JoinChannel>}
         <div className={styles.container}>
             <Header>
                 <SearchInput

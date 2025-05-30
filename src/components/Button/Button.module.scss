@@ -19,7 +19,7 @@ button {
     font-family: inherit;
 
     color: #fff;
-    border: 2px solid color-mix(in srgb, var(--button-color) 50%, white 25%);
+    border: 2px solid color-mix(in srgb, var(--button-color) 80%, #000 20%);
 
     &.iconOnly {
         padding: 10px;
@@ -41,19 +41,17 @@ button {
     }
 
     &.displayFilled {
-        background-color: var(--button-color);
+        background-color: color-mix(in srgb, var(--button-color) 80%, #000 20%); 
 
         &:hover:not(:disabled) {
-            background-color: color-mix(in srgb, var(--button-color) 75%, #000 15%); 
+            background-color: color-mix(in srgb, var(--button-color) 70%, #000 30%); 
         }
         &:active:not(:disabled) {
-            background-color: color-mix(in srgb, var(--button-color) 75%, #000 35%) !important; 
+            background-color: color-mix(in srgb, var(--button-color) 60%, #000 40%) !important; 
         }
     }
 
     &.displayOutlined {
-        border: 1px solid var(--button-color);
-
         &:hover:not(:disabled) {
             background-color: color-mix(in srgb, var(--button-color) 15%, transparent);
         }
@@ -109,5 +107,5 @@ button {
 }
 
 .colorNeutral {
-    --button-color: hsl(0, 0%, 35%);
+    --button-color: hsl(0, 0%, 25%);
 }

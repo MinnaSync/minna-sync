@@ -1,0 +1,47 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 500px;
+}
+
+.heading {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-faint);
+}
+
+.username_input {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    .input {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid var(--border-faint);
+        background-color: var(--input-background);
+
+        &:focus-within {
+            border-color: var(--accent-primary);
+        }
+    }
+}
+
+.input_heading {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+
+    .required {
+        color: var(--accent-red);
+    }
+}
+
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    padding-top: 10px;
+}

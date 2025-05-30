@@ -1,9 +1,10 @@
-import { JSX } from 'react';
+import { JSX, ReactNode } from 'react';
 
 import { Typography } from '#/components/Typography/Typography';
 import styles from './Button.module.scss'
 
 interface ButtonProps {
+    type?: "submit" | "reset" | "button";
     disabled?: boolean;
     color: 'Primary' | 'White' | 'Danger' | 'Warning' | 'Positive' | 'Neutral';
     display: 'Filled' | 'Outlined' | 'Link' | 'Ghost';
@@ -12,7 +13,7 @@ interface ButtonProps {
         position: 'left' | 'right';
         element: JSX.Element;
     };
-    children?: string;
+    children?: ReactNode;
     onClick?: () => void;
 }
 
@@ -33,10 +34,11 @@ export default function Button(
             onClick={
                 props.disabled ? undefined : props.onClick
             }
+            type={props.type}
         >
             { props.icon && props.icon.position === 'left' && props.icon.element }
             { props.children &&
-                <Typography variant="heading" weight="bold">
+                <Typography variant="heading" weight="semi_bold" size="sm">
                     {props.children}
                 </Typography>
             }

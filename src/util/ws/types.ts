@@ -25,6 +25,11 @@ export type JoinRoomEvent = {
      * The channel that was joined.
      */
     channel_id: string;
+    /**
+     * The username that the guest user is joining as.
+     * This field will not work if any authorization is provided.
+     */
+    guest_username?: string;
 };
 
 export type PlayerStateEvent = 
