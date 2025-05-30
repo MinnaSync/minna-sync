@@ -76,13 +76,13 @@ export function Channel() {
     const [ openedPage, setOpenedPage ] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!guestUser) return;
+        if (!connected || !guestUser) return;
 
         websocket.emit("join_room", {
             channel_id: channelId,
             guest_username: guestUser,
         });
-    }, [guestUser]);
+    }, [connected, guestUser]);
 
     useEffect(() => {
         const controller = new AbortController();
