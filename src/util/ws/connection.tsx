@@ -32,7 +32,7 @@ type ListenerOptions = {
 
 type EmitPayloads = {
     connection: ConnectionEvent;
-    join_room: JoinRoomEvent;
+    join_channel: JoinRoomEvent;
     player_state: PlayerStateEvent;
     queue_media: MediaUpdateEvent;
     send_message: GenericMessageEvent;

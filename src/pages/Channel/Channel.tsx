@@ -78,7 +78,7 @@ export function Channel() {
     useEffect(() => {
         if (!connected || !guestUser) return;
 
-        websocket.emit("join_room", {
+        websocket.emit("join_channel", {
             channel_id: channelId,
             guest_username: guestUser,
         });
