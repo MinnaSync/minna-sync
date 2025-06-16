@@ -46,7 +46,7 @@ export const ChatContent = memo(() => {
             if (!resizing) return;
 
             const width = chatContent.getBoundingClientRect().right - e.clientX;
-            chatContent.style.width = `${Math.min(Math.max(width, 400), 750)}px`;
+            chatContent.style.width = `${Math.min(Math.max(width, 300), 750)}px`;
         }, { signal });
         document.addEventListener("mouseup", () => {
             resizing = false
