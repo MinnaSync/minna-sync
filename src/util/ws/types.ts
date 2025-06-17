@@ -86,6 +86,41 @@ export type MediaUpdateEvent = { id: string } & GenericMedia;
 
 export type MediaChangedEvent = NowPlaying;
 
+export enum MessageType {
+    /** A system notification */
+    Notification = 0,
+    /** A user joining the channel. */
+    UserJoin = 1,
+    /** A user leaving the channel. */
+    UserLeave = 2,
+    /** A user sending a message to the channel. */
+    UserMessage = 3,
+    /** When media is changed. */
+    MediaChanged = 4,
+    /** When media is queued to be played. */
+    MediaQueued = 5,
+}
+
+export type ChannelMessage = {
+    /**
+     * The type of the message that was sent.
+     */
+    type: MessageType;
+    /**
+     * When the message was sent.
+     */
+    utc_epoch: number;
+    /**
+     * The user that sent this message.
+     * Anything that is not UserMessage will be "System".
+     */
+    username: string;
+    /**
+     * The contents of the message.
+     */
+    content: string;
+}
+
 export type RoomDataEvent = {
     /**
      * The current playing media.
@@ -95,6 +130,10 @@ export type RoomDataEvent = {
      * An array of media that is queued to be played.
      */
     queue: Array<MediaUpdateEvent>;
+    /**
+     * A list of the current messages in the channel.
+     */
+    messages: Array<ChannelMessage>;
 };
 
 export type TimeUpdateEvent = GenericPlayingMedia;

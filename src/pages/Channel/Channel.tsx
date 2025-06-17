@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "react-router";
 
-import { TimeUpdateEvent } from "#/util/ws/types";
+import { ChannelMessage, TimeUpdateEvent } from "#/util/ws/types";
 
 import { Header } from "#/components/Header/Header";
 import { ChatContent } from "#/components/Chat/ChatContent";
@@ -29,6 +29,7 @@ export function Channel() {
     const [ displayJoinRoomModal, setDisplayJoinRoomModal ] = useState(false);
     const [ connected, setConnected ] = useState(false);
     const [ guestUser, setGuestUser ] = useState<null | string>(null);
+    const [ messages, setMessages ] = useState<Array<ChannelMessage>>([]);
 
     const [ src, setSrc ] = useState("");
     const [ time, setTime ] = useState(0);
@@ -106,19 +107,25 @@ export function Channel() {
             setDisplayJoinRoomModal(true);
         }, { signal });
 
-        websocket.on("room_data", ({ now_playing, queue }) => {
-            if (!now_playing || !playerRef.current) return;
+        websocket.on("room_data", ({ now_playing, queue, messages }) => {
+            if (!playerRef.current) return;
 
             handleTempSuppress();
 
-            setSrc(`${import.meta.env.VITE_PROXY_URL}/m3u8/${now_playing.url}`);
-            setTime(now_playing.current_time);
-            setPaused(now_playing.paused);
-            setSeries(now_playing.series || "Unknown Series");
-            setTitle(now_playing.title || "No title");
+            setMessages(messages);
 
-            for (const media of queue) {
-                queuedRef.current.add(media.id);
+            if (now_playing !== null) {
+                setSrc(`${import.meta.env.VITE_PROXY_URL}/m3u8/${now_playing.url}`);
+                setTime(now_playing.current_time);
+                setPaused(now_playing.paused);
+                setSeries(now_playing.series || "Unknown Series");
+                setTitle(now_playing.title || "No title");
+            }
+
+            if (queue.length) {
+                for (const media of queue) {
+                    queuedRef.current.add(media.id);
+                }
             }
         }, { signal });
 
@@ -216,7 +223,12 @@ export function Channel() {
                         return () => controller.abort();
                     }}
                 />
-                <ChatContent />
+                <ChatContent
+                    messages={messages}
+                    onMessage={(m: ChannelMessage) => {
+                        setMessages((p) => [...p, m]);
+                    }}
+                />
             </div>
         </div>
     </>);

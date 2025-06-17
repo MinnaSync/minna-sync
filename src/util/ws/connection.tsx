@@ -10,7 +10,8 @@ import type {
     UserMessageEvent,
     GenericMessageEvent,
     RoomDataEvent,
-    TimeUpdateEvent
+    TimeUpdateEvent,
+    ChannelMessage
 } from "./types";
 import { tryCatch } from "#/util/util";
 
@@ -48,6 +49,7 @@ type ResponsePayloads = {
     media_changed: MediaUpdateEvent;
     state_sync: TimeUpdateEvent;
     state_updated: TimeUpdateEvent;
+    channel_message: ChannelMessage;
 };
 
 export class Websocket {

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, memo, Fragment } from "react";
+import { useEffect, useRef, memo, Fragment } from "react";
 import { useParams } from "react-router";
 
 import { useWebsocket } from "#/providers/WebsocketProvider";
@@ -9,8 +9,14 @@ import { ChatNotification } from "./ChatNotification";
 import { Typography } from "#/components/Typography/Typography";
 import { EnterIcon, LeaveIcon, PlayIcon, QueueIcon } from "#/components/Icons/Icons";
 import { MessageInput } from "../Input/MessageInput";
+import { ChannelMessage, MessageType } from "#/util/ws/types";
 
-export const ChatContent = memo(() => {
+type ChatContentProps = {
+    messages: Array<ChannelMessage>;
+    onMessage: (m: ChannelMessage) => void;
+};
+
+export const ChatContent = memo(({ messages, onMessage }: ChatContentProps) => {
     const channelId = useParams().channelId;
     const websocket = useWebsocket();
     
@@ -18,11 +24,6 @@ export const ChatContent = memo(() => {
     const messagesRef = useRef<HTMLOListElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const resizeBarRef = useRef<HTMLDivElement>(null);
-
-    const [ messages, setMessages ] = useState<(
-        { type: 'message', username: string, message: string } |
-        { type: 'notification', icon: React.ReactNode, accent: 'primary' | 'green' | 'red' | 'orange'; message: string }
-    )[]>([]);
 
     const sendMessage = (message: string) => {
         websocket.emit("send_message", {
@@ -69,48 +70,8 @@ export const ChatContent = memo(() => {
         const controller = new AbortController();
         const signal = controller.signal;
 
-        websocket.on("user_joined", (data) => {
-            setMessages((p) => [...p, {
-                type: 'notification',
-                icon: <EnterIcon />,
-                accent: 'green',
-                message: `${data.username} has joined the channel.`,
-            }]);
-        }, { signal });
-
-        websocket.on("user_left", (data) => {
-            setMessages((p) => [...p, {
-                type: 'notification',
-                icon: <LeaveIcon />,
-                accent: 'red',
-                message: `${data.username} has left the channel.`,
-            }]);
-        }, { signal });
-
-        websocket.on("receive_message", ({ username, message }) => {
-            setMessages((p) => [...p, {
-                type: 'message',
-                username: username,
-                message: message
-            }]);
-        }, { signal });
-
-        websocket.on('queue_updated', ({ title, series }) => {
-            setMessages((p) => [...p, {
-                type: 'notification',
-                icon: <QueueIcon />,
-                accent: 'primary',
-                message: `${series} - ${title} has been added to the queue.`,
-            }]);
-        }, { signal });
-
-        websocket.on('media_changed', ({ title, series }) => {
-            setMessages((p) => [...p, {
-                type: 'notification',
-                icon: <PlayIcon />,
-                accent: 'primary',
-                message: `${series} - ${title} is now playing.`,
-            }]);
+        websocket.on("channel_message", (m) => {
+            onMessage(m);
         }, { signal });
 
         return () => controller.abort();
@@ -130,24 +91,46 @@ export const ChatContent = memo(() => {
                 {websocket.connected
                     ? messages.map((m, i) =>
                         <Fragment key={i}>
-                            {m.type === 'message' &&
+                            {m.type === MessageType.UserMessage &&
                                 <ChatMessage username={m.username}>
-                                    {m.message}
+                                    {m.content}
                                 </ChatMessage>
                             }
-                            {m.type === 'notification' &&
+                            {m.type === MessageType.UserJoin &&
                                 <ChatNotification
-                                    icon={m.icon}
-                                    accent={m.accent}
+                                    icon={<EnterIcon />}
+                                    accent="green"
                                 >
-                                    <Typography tag="span">{m.message}</Typography>
+                                    <Typography tag="span">{m.content}</Typography>
+                                </ChatNotification>
+                            }
+                            {m.type === MessageType.UserLeave &&
+                                <ChatNotification
+                                    icon={<LeaveIcon />}
+                                    accent="red"
+                                >
+                                    <Typography tag="span">{m.content}</Typography>
+                                </ChatNotification>
+                            }
+                            {m.type === MessageType.MediaChanged &&
+                                <ChatNotification
+                                    icon={<PlayIcon />}
+                                    accent="primary"
+                                >
+                                    <Typography tag="span">{m.content}</Typography>
+                                </ChatNotification>
+                            }
+                            {m.type === MessageType.MediaQueued &&
+                                <ChatNotification
+                                    icon={<QueueIcon />}
+                                    accent="primary"
+                                >
+                                    <Typography tag="span">{m.content}</Typography>
                                 </ChatNotification>
                             }
                         </Fragment>
                     )
-                    : <>
-                        
-                    </>
+                    : <></>
                 }
             </ol>
             <div className={styles.chat_input}>
