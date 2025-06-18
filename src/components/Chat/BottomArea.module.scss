@@ -1,0 +1,38 @@
+.chat_bottom_area {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 0 15px;
+
+    .message_input {
+        padding: 15px 20px;
+
+        border-radius: 15px;
+        border: 1px solid var(--border-faint);
+        background-color: var(--input-background);
+
+        &:focus-within {
+            border-color: var(--accent-primary);
+        }
+
+        // Too lazy to figure out how to use the typography component.
+        input {
+            font-family: var(--font-body);
+            font-size: 14px;
+            font-weight: medium;
+        }
+    }
+
+    .quick_actions {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 5px;
+    }
+
+    .quick_actions_group {
+        display: flex;
+        flex-direction: row;
+        gap: 5px;
+    }
+}

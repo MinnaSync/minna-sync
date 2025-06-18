@@ -10,7 +10,7 @@ button {
     padding: 10px 15px;
 
     border: none;
-    border-radius: 25px;
+    border-radius: 12px;
     background-color: transparent;
     transition: background-color 100ms ease-in-out;
 
@@ -18,8 +18,7 @@ button {
     font-size: 16px;
     font-family: inherit;
 
-    color: #fff;
-    border: 2px solid color-mix(in srgb, var(--button-color) 80%, #000 20%);
+    color: var(--text-primary);
 
     &.iconOnly {
         padding: 10px;
@@ -76,12 +75,15 @@ button {
 
     &.displayGhost {
         background-color: transparent;
+        color: var(--text-secondary);
 
         &:hover:not(:disabled) {
             background-color: color-mix(in srgb, var(--button-color) 15%, transparent);
+            color: var(--text-primary);
         }
         &:active:not(:disabled) {
             background-color: color-mix(in srgb, var(--button-color) 25%, transparent);
+            color: var(--text-primary);
         }
     }
 }
@@ -103,7 +105,7 @@ button {
 }
 
 .colorWhite {
-    --button-color: hsl(0, 0%, 100%);
+    --button-color: var(--text-primary);
 }
 
 .colorNeutral {

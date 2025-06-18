@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "react-router";
 
-import { ChannelMessage, TimeUpdateEvent } from "#/util/ws/types";
+import { ChannelMessage, CommandType, TimeUpdateEvent } from "#/util/ws/types";
 
 import { Header } from "#/components/Header/Header";
-import { ChatContent } from "#/components/Chat/ChatContent";
 import { VideoPlayer } from "#/components/VideoPlayer/VideoPlayer";
 import { SearchInput } from "#/components/Input//Search/SearchInput";
 
@@ -14,6 +13,7 @@ import styles from "./Channel.module.scss"
 import { MediaPlayerInstance, useStore } from "@vidstack/react";
 import { InfoContainer } from "#/portals/SeriesInfo/InfoContainer";
 import { JoinChannel } from "#/components/Modals/JoinChannel/JoinChannel";
+import { Chat } from "#/components/Chat/Chat";
 
 export function Channel() {
     const playerRef = useRef<MediaPlayerInstance | null>(null);
@@ -54,23 +54,13 @@ export function Channel() {
         }, 1_000);
     }, []);
 
-    const handlePausePlay = useCallback((paused: boolean) => {
+    const handlePausePlaySync = useCallback((paused: boolean) => {
         if (suppressStatusUpdates.current) return;
-        
-        /**
-         * Ignores pause events for when the video is near the end.
-         * 
-         * This prevents the player from telling the server that the video is paused,
-         * causing it to not queue the next ideo.
-         */
-        if (Math.abs(playerRef.current!.currentTime - playerRef.current!.duration) < 0.1) return;
-
         websocket.emit("player_state", { paused });
     }, []);
 
-    const handleTimeUpdate = useCallback((time: number) => {
+    const handleTimeUpdateSync = useCallback((time: number) => {
         if (suppressStatusUpdates.current) return;
-
         websocket.emit("player_state", { current_time: time });
     }, []);
 
@@ -105,6 +95,7 @@ export function Channel() {
         websocket.on("connected", () => {
             setConnected(true);
             setDisplayJoinRoomModal(true);
+            // setGuestUser("luckfire")
         }, { signal });
 
         websocket.on("room_data", ({ now_playing, queue, messages }) => {
@@ -149,6 +140,18 @@ export function Channel() {
 
         websocket.on("state_updated", (e) => {
             handleTimeUpdate(e);
+        }, { signal });
+
+        websocket.on("command", ({ type }) => {
+            switch (type) {
+                case CommandType.PurgeMessages:
+                    setMessages([]);
+                    break;
+            }
+        }, { signal });
+
+        websocket.on("channel_message", (m) => {
+            setMessages(messages => [...messages, m]);
         }, { signal });
 
         return () => controller.abort();
@@ -205,8 +208,8 @@ export function Channel() {
 
                         const player = playerRef.current!;
 
-                        player?.addEventListener("playing", () => handlePausePlay(false), { signal });
-                        player?.addEventListener("pause", () => handlePausePlay(true), { signal });
+                        player?.addEventListener("playing", () => handlePausePlaySync(false), { signal });
+                        player?.addEventListener("pause", () => handlePausePlaySync(true), { signal });
 
                         player?.addEventListener("seeked", () => {
                             if (seekDebounce) {
@@ -215,7 +218,7 @@ export function Channel() {
 
                             // @ts-ignore
                             seekDebounce = setTimeout(() => {
-                                handleTimeUpdate(player.currentTime);
+                                handleTimeUpdateSync(player.currentTime);
                                 seekDebounce = null;
                             }, 500);
                         }, { signal });
@@ -223,11 +226,8 @@ export function Channel() {
                         return () => controller.abort();
                     }}
                 />
-                <ChatContent
+                <Chat
                     messages={messages}
-                    onMessage={(m: ChannelMessage) => {
-                        setMessages((p) => [...p, m]);
-                    }}
                 />
             </div>
         </div>

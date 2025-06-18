@@ -1,0 +1,10 @@
+.chat_messages {
+    overflow: scroll;
+
+    margin: 0;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-faint);
+
+    list-style: none;
+    vertical-align: bottom;
+}

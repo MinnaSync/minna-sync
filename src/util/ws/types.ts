@@ -136,4 +136,22 @@ export type RoomDataEvent = {
     messages: Array<ChannelMessage>;
 };
 
+export enum CommandType {
+    /**
+     * A user has taken control over the player.
+     */
+    TakeRemote = 0,
+    /**
+     * The channel's messages have been purged.
+     */
+    PurgeMessages = 1,
+}
+
+export type ChannelCommand = {
+    /**
+     * The type of command that was executed.
+     */
+    type: CommandType;
+};
+
 export type TimeUpdateEvent = GenericPlayingMedia;

@@ -2,12 +2,12 @@
     --app-background: black;
     --modal-background: hsl(0, 0%, 1%);
     --popup-background: hsl(0, 0%, 1%);
-    --input-background: hsl(0, 0%, 5%);
+    --input-background: #0C0D0E;
 
-    --modifier-background: rgba(255, 255, 255, 0.05);
-    --modifier-hover: rgba(255, 255, 255, 0.1);
+    --modifier-background: rgba(253, 253, 255, 0.05);
+    --modifier-hover: rgba(253, 253, 255, 0.1);
 
-    --border-faint: rgba(255, 255, 255, 0.15);
+    --border-faint: rgba(253, 253, 255, 0.15);
 
     --accent-primary: #8FAAED;
     --accent-red: #E83A3A;
@@ -16,8 +16,8 @@
 
     --font-header: 'Montserrat', Avenir, Helvetica, Arial, sans-serif;
     --font-body: 'Inter', Avenir, Helvetica, Arial, sans-serif;
-    --text-primary: hsl(0, 0%, 95%);
-    --text-secondary: hsl(0, 0%, 80%);
+    --text-primary: rgb(253, 253, 255);
+    --text-secondary: rgb(171, 176, 187);
     --text-grey: hsl(0, 0%, 25%);
 }
 

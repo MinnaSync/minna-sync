@@ -74,7 +74,7 @@ export function JoinChannel({ channelId, onSubmit, onClose }: JoinRoomProps) {
                     <Button
                         disabled={isSubmitting}
                         color="Primary"
-                        display="Outlined"
+                        display="Filled"
                         type="submit"
                     >
                         Join Channel

@@ -11,7 +11,8 @@ import type {
     GenericMessageEvent,
     RoomDataEvent,
     TimeUpdateEvent,
-    ChannelMessage
+    ChannelMessage,
+    ChannelCommand
 } from "./types";
 import { tryCatch } from "#/util/util";
 
@@ -37,6 +38,7 @@ type EmitPayloads = {
     player_state: PlayerStateEvent;
     queue_media: MediaUpdateEvent;
     send_message: GenericMessageEvent;
+    run_command: ChannelCommand;
 };
 
 type ResponsePayloads = {
@@ -50,6 +52,7 @@ type ResponsePayloads = {
     state_sync: TimeUpdateEvent;
     state_updated: TimeUpdateEvent;
     channel_message: ChannelMessage;
+    command: ChannelCommand;
 };
 
 export class Websocket {

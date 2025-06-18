@@ -1,0 +1,54 @@
+.channel_message {
+    padding: 5px 15px;
+
+    &:hover:has(.user_message) {
+        background-color: rgba(253, 253, 255, 0.05);
+    }
+}
+
+.notification {
+    --notification-accent: var(--accent-primary); // default
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    padding: 15px 10px 15px 13px;
+
+    border-radius: 15px;
+    border: 1px solid var(--border-faint);
+    background-color: color-mix(in srgb, var(--notification-accent) 10%, black 90%);
+
+    &.colorPrimary {
+        --notification-accent: var(--accent-primary);
+    }
+    &.colorGreen {
+        --notification-accent: var(--accent-green);
+    }
+    &.colorRed {
+        --notification-accent: var(--accent-red);
+    }
+    &.colorOrange {
+        --notification-accent: var(--accent-orange);
+    }
+
+    .header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 5px;
+    }
+}
+
+.user_message {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    .header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 5px;
+    }
+}
