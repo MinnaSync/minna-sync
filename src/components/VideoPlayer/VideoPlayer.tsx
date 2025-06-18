@@ -219,16 +219,24 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
                             volume={volume * 100}
                             muted={isMuted}
                             onClick={() => {
+                                remote.toggleMuted();
+
+                                /**
+                                 * This seems backwards but it's how it works when toggleMuted() is called.
+                                 */
                                 if (ref.current?.muted) {
-                                    remote.unmute();
                                     setIsMuted(false);
                                 }
                                 else {
-                                    remote.mute();
                                     setIsMuted(true);
                                 }
                             }}
                             onVolumeChange={(v) => {
+                                if (ref.current?.muted) {
+                                    remote.toggleMuted();
+                                    setIsMuted(false);
+                                };
+
                                 v = Math.min(v / 100, 100);
 
                                 remote.changeVolume(v);
