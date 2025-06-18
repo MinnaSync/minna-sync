@@ -6,7 +6,7 @@ import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
 
 import styles from "./VideoPlayer.module.scss";
-import { ControlGroup, PlayPauseButton, ToggleFullscreenButton } from './Controls';
+import { ControlGroup, PlayPauseButton, ToggleFullscreenButton, VolumeControl } from './Controls';
 import { Typography } from '../Typography/Typography';
 
 type VideoPlayerProps = {
@@ -44,6 +44,8 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
 
     const [ playerFocused, setPlayerFocused ] = useState(false);
     const [ isPaused, setIsPaused ] = useState(false);
+    const [ isMuted, setIsMuted ] = useState(ref.current?.muted || false);
+    const [ volume, setVolume ] = useState(ref.current?.volume || 1);
     const [ currentTime, setCurrentTime ] = useState("00:00 / 00:00");
 
     const onProviderChange = useCallback((provider: MediaProviderAdapter | null, _: MediaProviderChangeEvent) => {
@@ -212,8 +214,27 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
                             paused={isPaused}
                             ended={false}
                             handlePausePlay={handlePausePlay}
-                        >
-                        </PlayPauseButton>
+                        />
+                        <VolumeControl
+                            volume={volume * 100}
+                            muted={isMuted}
+                            onClick={() => {
+                                if (ref.current?.muted) {
+                                    remote.unmute();
+                                    setIsMuted(false);
+                                }
+                                else {
+                                    remote.mute();
+                                    setIsMuted(true);
+                                }
+                            }}
+                            onVolumeChange={(v) => {
+                                v = Math.min(v / 100, 100);
+
+                                remote.changeVolume(v);
+                                setVolume(v);
+                            }} 
+                        />
                         <div
                             ref={timerRef}
                             className={styles.timer}
@@ -226,8 +247,7 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
                     <ControlGroup>
                         <ToggleFullscreenButton
                             wrapper={wrapperRef.current!}
-                        >
-                        </ToggleFullscreenButton>
+                        />
                     </ControlGroup>
                 </div>
             </div>
