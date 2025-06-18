@@ -25,3 +25,14 @@
         }
     }
 }
+
+@media only screen and (max-width: 1000px) {
+    .chat {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 350px;
+
+        border-top: 1px solid var(--border-faint);
+        border-left: none;
+    }
+}
