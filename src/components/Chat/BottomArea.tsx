@@ -51,7 +51,7 @@ export const BottomArea = memo(() => {
                     <Button
                         type="submit"
                         display="Ghost"
-                        color="White"
+                        color="Danger"
                         textInverted
                         icon={{
                             position: 'left',
