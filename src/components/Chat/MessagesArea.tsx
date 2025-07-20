@@ -37,6 +37,7 @@ export const MessagesArea = memo(({ messages }: MessageAreaProps) => {
                             icon={<UserJoinIcon />}
                             header="USER JOINED"
                             accent="Green"
+                            sfx="/sfx/notification.mp3"
                         >{m.content}</Notification>
                     }
                     {m.type === MessageType.UserLeave &&
