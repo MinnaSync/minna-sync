@@ -22,7 +22,8 @@ type EpisodeProps = {
 export const Episode = memo(({ id, series, title, poster, number, thumbnail, queue }: EpisodeProps) => {
     const websocket = useWebsocket();
     
-    const { data: episodeInfo, refetch } = useQuery({
+    const { refetch } = useQuery({
+        enabled: false,
         queryKey: ["episodeInfo", id],
         queryFn: async () => await neptune.animepaheStream(id),
         staleTime: Infinity,
@@ -34,7 +35,7 @@ export const Episode = memo(({ id, series, title, poster, number, thumbnail, que
         <div className={styles.episode} onClick={async () => {
             if (queue.find((m) => m.id === id)) return;
 
-            await refetch();
+            const { data: episodeInfo } = await refetch();
             if (!episodeInfo || !episodeInfo.isOk()) return;
 
             const info = episodeInfo.value;
