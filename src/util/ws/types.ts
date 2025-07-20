@@ -82,9 +82,7 @@ export type GenericPlayingMedia = {
 
 export interface NowPlaying extends GenericMedia, GenericPlayingMedia {};
 
-export type MediaUpdateEvent = { id: string } & GenericMedia;
-
-export type MediaChangedEvent = NowPlaying;
+export type QueuedMedia = { id: string } & GenericMedia;
 
 export enum MessageType {
     /** A system notification */
@@ -129,7 +127,7 @@ export type RoomDataEvent = {
     /**
      * An array of media that is queued to be played.
      */
-    queue: Array<MediaUpdateEvent>;
+    queue: Array<QueuedMedia>;
     /**
      * A list of the current messages in the channel.
      */
@@ -145,6 +143,10 @@ export enum CommandType {
      * The channel's messages have been purged.
      */
     PurgeMessages = 1,
+    /**
+     * Tells the server to skip to the next queued media.
+     */
+    QueueSkip = 2
 }
 
 export type ChannelCommand = {

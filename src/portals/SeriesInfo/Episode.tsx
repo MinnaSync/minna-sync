@@ -1,9 +1,11 @@
-import { memo, useEffect } from "react";
+import { memo } from "react";
 import { useQuery } from "react-query";
 
-import { MediaUpdateEvent } from "#/util/ws/types";
-import { Typography } from "#/components/Typography/Typography";
 import styles from "./Episode.module.scss";
+
+import { useWebsocket } from "#/providers/WebsocketProvider";
+import { QueuedMedia } from "#/util/ws/types";
+import { Typography } from "#/components/Typography/Typography";
 import neptune from "#/util/api/neptune";
 
 type EpisodeProps = {
@@ -14,36 +16,41 @@ type EpisodeProps = {
     number: number;
     thumbnail: string;
 
-    queueRef: React.RefObject<Set<string>>;
-    onQueue: (info: MediaUpdateEvent) => void;
+    queue: Array<QueuedMedia>;
 };
 
-export const Episode = memo(({ id, series, title, poster, number, thumbnail, queueRef, onQueue }: EpisodeProps) => {
+export const Episode = memo(({ id, series, title, poster, number, thumbnail, queue }: EpisodeProps) => {
+    const websocket = useWebsocket();
+    
     const { data: episodeInfo, refetch } = useQuery({
-        enabled: !!queueRef.current.has(id),
         queryKey: ["episodeInfo", id],
         queryFn: async () => await neptune.animepaheStream(id),
         staleTime: Infinity,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
-    });
-
-    useEffect(() => {
-        if (!episodeInfo?.isOk()) return;
-
-        const info = episodeInfo.value;
-
-        onQueue({
-            id: id,
-            title: title,
-            series: series,
-            url: info.jpn.find((r) => r.resolution === "1080")?.link!,
-            poster_image_url: poster,
-        });
-    }, [episodeInfo]);
+    })
 
     return (<>
-        <div className={styles.episode} onClick={() => refetch()}>
+        <div className={styles.episode} onClick={async () => {
+            if (queue.find((m) => m.id === id)) return;
+
+            await refetch();
+            if (!episodeInfo || !episodeInfo.isOk()) return;
+
+            const info = episodeInfo.value;
+            const queueInfo = {
+                id, title, series,
+                /**
+                 * TODO: Find the most relaible link (1080 -> 720 -> etc)
+                 * The backend should be updated to provide a sort order to make this easier on the frontend.
+                 */
+                url: info.jpn.find((r) => r.resolution === "1080")!.link,
+                poster_image_url: poster,
+            }
+
+            queue.push(queueInfo);
+            websocket.emit("queue_media", queueInfo);
+        }}>
             <div className={styles.thumbnail}>
                 <img loading="lazy" src={thumbnail} />
                 <div className={styles.episode_number}>

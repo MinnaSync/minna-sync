@@ -7,7 +7,7 @@ import { AnimeInfo } from "@minnasync/api-types";
 import styles from "./InfoContainer.module.scss";
 import { Typography } from "#/components/Typography/Typography";
 
-import { MediaUpdateEvent } from "#/util/ws/types";
+import { QueuedMedia } from "#/util/ws/types";
 import neptune from "#/util/api/neptune";
 import { Skeleton } from "#/components/Skeleton/Skeleton";
 import { CloseIcon, UpArrowIcon, WarningIcon } from "#/components/Icons/Icons";
@@ -18,8 +18,7 @@ type InfoContainerProps = {
     id: string;
     provider: "animepahe";
 
-    queueRef: React.RefObject<Set<string>>;
-    onQueue: (info: MediaUpdateEvent) => void;
+    queue: Array<QueuedMedia>;
 
     onClose: () => void;
 };
@@ -34,7 +33,7 @@ function isSensitive(info: AnimeInfo['meta']) {
     return sensitiveGenres.some((genre) => info.genres.includes(genre));
 }
 
-export function InfoContainer({ id, provider, queueRef, onQueue, onClose }: InfoContainerProps) {
+export function InfoContainer({ id, provider, queue, onClose }: InfoContainerProps) {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const detailsRef = useRef<HTMLDivElement | null>(null);
 
@@ -270,8 +269,7 @@ export function InfoContainer({ id, provider, queueRef, onQueue, onClose }: Info
                                             poster={info?.pages[0]?.meta.poster!}
                                             number={episode.episode as number}
                                             thumbnail={`${import.meta.env.VITE_PROXY_URL}/url/${episode.preview}`}
-                                            queueRef={queueRef}
-                                            onQueue={onQueue}
+                                            queue={queue}
                                         />
                                     ))
                                 )}

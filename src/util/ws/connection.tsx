@@ -4,7 +4,7 @@ import type {
     JoinRoomEvent,
     PlayerStateEvent,
     MessageEvent,
-    MediaUpdateEvent,
+    QueuedMedia,
     UserJoinEvent,
     UserLeftEvent,
     UserMessageEvent,
@@ -36,7 +36,7 @@ type EmitPayloads = {
     connection: ConnectionEvent;
     join_channel: JoinRoomEvent;
     player_state: PlayerStateEvent;
-    queue_media: MediaUpdateEvent;
+    queue_media: QueuedMedia;
     send_message: GenericMessageEvent;
     run_command: ChannelCommand;
 };
@@ -47,8 +47,8 @@ type ResponsePayloads = {
     user_joined: UserJoinEvent;
     user_left: UserLeftEvent;
     receive_message: UserMessageEvent;
-    queue_updated: MediaUpdateEvent;
-    media_changed: MediaUpdateEvent;
+    queue_updated: QueuedMedia;
+    media_changed: QueuedMedia;
     state_sync: TimeUpdateEvent;
     state_updated: TimeUpdateEvent;
     channel_message: ChannelMessage;

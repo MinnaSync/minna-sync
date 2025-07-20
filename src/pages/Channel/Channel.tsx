@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "react-router";
 
-import { ChannelMessage, CommandType, TimeUpdateEvent } from "#/util/ws/types";
+import { ChannelMessage, CommandType, QueuedMedia, TimeUpdateEvent } from "#/util/ws/types";
 
 import { Header } from "#/components/Header/Header";
 import { VideoPlayer } from "#/components/VideoPlayer/VideoPlayer";
@@ -19,8 +19,6 @@ export function Channel() {
     const playerRef = useRef<MediaPlayerInstance | null>(null);
     useStore(MediaPlayerInstance, playerRef);
 
-    const queuedRef = useRef(new Set<string>());
-
     const channelId = useParams().channelId!;
     const websocket = useWebsocket();
 
@@ -30,6 +28,7 @@ export function Channel() {
     const [ connected, setConnected ] = useState(false);
     const [ guestUser, setGuestUser ] = useState<null | string>(null);
     const [ messages, setMessages ] = useState<Array<ChannelMessage>>([]);
+    const [ queue, setQueue ] = useState<Array<QueuedMedia>>([]);
 
     const [ src, setSrc ] = useState("");
     const [ time, setTime ] = useState(0);
@@ -95,7 +94,6 @@ export function Channel() {
         websocket.on("connected", () => {
             setConnected(true);
             setDisplayJoinRoomModal(true);
-            // setGuestUser("luckfire")
         }, { signal });
 
         websocket.on("room_data", ({ now_playing, queue, messages }) => {
@@ -113,14 +111,10 @@ export function Channel() {
                 setTitle(now_playing.title || "No title");
             }
 
-            if (queue.length) {
-                for (const media of queue) {
-                    queuedRef.current.add(media.id);
-                }
-            }
+            setQueue(queue);
         }, { signal });
 
-        websocket.on("media_changed", ({ url, series, title }) => {
+        websocket.on("media_changed", ({ id, url, series, title }) => {
             handleTempSuppress();
 
             setSrc(`${import.meta.env.VITE_PROXY_URL}/m3u8/${url}`);
@@ -128,10 +122,15 @@ export function Channel() {
             setPaused(false);
             setSeries(series  || "Unknown Series");
             setTitle(title || "No title");
+
+            const queuedMedia = queue.find((m) => m.id === id);
+            if (queuedMedia) {
+                setQueue(queue.filter((m) => m.id !== id))
+            }
         }, { signal });
 
-        websocket.on("queue_updated", ({ id }) => {
-            queuedRef.current.add(id);
+        websocket.on("queue_updated", (item) => {
+            setQueue((p) => [...p, item]);
         }, { signal });
 
         websocket.on("state_sync", (e) => {
@@ -180,13 +179,15 @@ export function Channel() {
                 {openedPage && <InfoContainer
                     id={openedPage!}
                     provider={provider}
-                    queueRef={queuedRef}
-                    onQueue={(info) => {
-                        if (queuedRef.current.has(info.id)) return;
+                    queue={queue}
+                    // onQueue={(info) => {
+                    //     if (queue.find((m) => m.id === info.id)) {
+                    //         console.debug(`Media ${info.id} is already queued.`);
+                    //         return;    
+                    //     }
 
-                        websocket.emit("queue_media", info);
-                        queuedRef.current.add(info.id);
-                    }}
+                    //     websocket.emit("queue_media", info);
+                    // }}
                     onClose={() => setOpenedPage(null)}
                 />}
                 <VideoPlayer
@@ -197,6 +198,10 @@ export function Channel() {
                     nowPlaying={series && title &&
                         `${series} - ${title}`
                     }
+                    onSkip={() => {
+                        if (!queue.length) return;
+                        websocket.emit("run_command", { type: CommandType.QueueSkip });
+                    }}
                     onReady={() => {
                         /**
                          * Prevent from emitting a state_updated event until seeking is done.
