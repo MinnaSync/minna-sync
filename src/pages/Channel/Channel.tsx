@@ -180,14 +180,6 @@ export function Channel() {
                     id={openedPage!}
                     provider={provider}
                     queue={queue}
-                    // onQueue={(info) => {
-                    //     if (queue.find((m) => m.id === info.id)) {
-                    //         console.debug(`Media ${info.id} is already queued.`);
-                    //         return;    
-                    //     }
-
-                    //     websocket.emit("queue_media", info);
-                    // }}
                     onClose={() => setOpenedPage(null)}
                 />}
                 <VideoPlayer
