@@ -203,3 +203,23 @@ export const UserLeaveIcon = memo((props: IconSizeProps) => {
         </svg>
     </Icon>
 });
+
+export const ViewQueueIcon = memo((props: IconSizeProps) => {
+    return <Icon {...props}>
+        <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M75.4142 46.9695L58.1622 35.5489C55.915 34.0613 53 35.7725 53 38.5794V61.4206C53 64.2275 55.915 65.9387 58.1622 64.4511L75.4142 53.0305C77.5286 51.6308 77.5286 48.3692 75.4142 46.9695Z" fill="currentColor"/>
+            <path d="M15 15C15 12.2386 17.2386 10 20 10H22C23.6569 10 25 11.3431 25 13V87C25 88.6569 23.6569 90 22 90H20C17.2386 90 15 87.7614 15 85V15Z" fill="currentColor"/>
+            <path d="M0 20C0 17.2386 2.23858 15 5 15H7C8.65685 15 10 16.3431 10 18V82C10 83.6569 8.65685 85 7 85H5C2.23858 85 0 82.7614 0 80V20Z" fill="currentColor"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M95 5C97.7614 5 100 7.23858 100 10V90L99.9932 90.2568C99.8595 92.8989 97.6753 95 95 95H35C32.3247 95 30.1405 92.8989 30.0068 90.2568L30 90V10C30 7.23858 32.2386 5 35 5H95ZM40 83C40 84.1046 40.8954 85 42 85H88C89.1046 85 90 84.1046 90 83V17C90 15.8954 89.1046 15 88 15H42C40.8954 15 40 15.8954 40 17V83Z" fill="currentColor"/>
+        </svg>
+    </Icon>
+});
+
+export const SkipIcon = memo((props: IconSizeProps) => {
+    return <Icon {...props}>
+        <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 11.9316C0 2.57536 9.71621 -3.12863 17.207 1.83008L64.7139 39.8984C71.7618 44.5641 71.7618 55.4359 64.7139 60.1016L17.207 98.1699C9.71621 103.129 0 97.4246 0 88.0684V11.9316Z" fill="currentColor"/>
+            <path d="M95 0C97.7614 0 100 2.23858 100 5V95C100 97.7614 97.7614 100 95 100H85C82.2386 100 80 97.7614 80 95V5C80 2.23858 82.2386 0 85 0H95Z" fill="currentColor"/>
+        </svg>
+    </Icon>
+});
