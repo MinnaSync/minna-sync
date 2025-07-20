@@ -223,3 +223,11 @@ export const SkipIcon = memo((props: IconSizeProps) => {
         </svg>
     </Icon>
 });
+
+export const SuccessIcon = memo((props: IconSizeProps) => {
+    return <Icon {...props}>
+        <svg width="100%" height="100%" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M50 0C77.6142 0 100 22.3858 100 50C100 77.6142 77.6142 100 50 100C22.3858 100 0 77.6142 0 50C0 22.3858 22.3858 0 50 0ZM80.251 29.6445C77.2933 26.7448 72.5443 26.7915 69.6445 29.749L41.666 58.2861L30.3555 46.749C27.4557 43.7915 22.7067 43.7448 19.749 46.6445C16.884 49.4536 16.7505 53.9975 19.3809 56.9678L19.6445 57.251L33.6338 71.5195C38.0445 76.018 45.2896 76.0183 49.7002 71.5195L80.3555 40.251C83.2552 37.2933 83.2085 32.5443 80.251 29.6445Z" fill="currentColor"/>
+        </svg>
+    </Icon>
+});

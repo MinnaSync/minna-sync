@@ -1,0 +1,15 @@
+.loadingSpinner {
+    .spinner {
+        transform-origin: 50% 50%;
+        animation: spin 750ms ease-in-out infinite;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -11,6 +11,28 @@
     border: 1px solid transparent;
     transition: background-color 100ms ease-in-out, border 150ms ease-in-out;
 
+    &.queued .queue_state {
+        color: var(--accent-green);
+    }
+
+    .queue_state {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 50px;
+
+        width: 24px;
+        height: 24px;
+
+        top: 10px;
+        right: 10px;
+
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+    }
+
     .thumbnail {
         position: relative;
         aspect-ratio: 16 / 9;

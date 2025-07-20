@@ -7,6 +7,9 @@ import { useWebsocket } from "#/providers/WebsocketProvider";
 import { QueuedMedia } from "#/util/ws/types";
 import { Typography } from "#/components/Typography/Typography";
 import neptune from "#/util/api/neptune";
+import { Spinner } from "@vidstack/react";
+import LoadingSpinner from "#/components/Loading/LoadingSpinner";
+import { SuccessIcon } from "#/components/Icons/Icons";
 
 type EpisodeProps = {
     id: string;
@@ -21,18 +24,19 @@ type EpisodeProps = {
 
 export const Episode = memo(({ id, series, title, poster, number, thumbnail, queue }: EpisodeProps) => {
     const websocket = useWebsocket();
+    const isQueued = queue.find((m) => m.id === id);
     
-    const { refetch } = useQuery({
+    const { refetch, isLoading } = useQuery({
         enabled: false,
         queryKey: ["episodeInfo", id],
         queryFn: async () => await neptune.animepaheStream(id),
         staleTime: Infinity,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
-    })
+    });
 
     return (<>
-        <div className={styles.episode} onClick={async () => {
+        <div className={`${styles.episode} ${isQueued ? styles.queued : ""}`} onClick={async () => {
             if (queue.find((m) => m.id === id)) return;
 
             const { data: episodeInfo } = await refetch();
@@ -53,6 +57,18 @@ export const Episode = memo(({ id, series, title, poster, number, thumbnail, que
             websocket.emit("queue_media", queueInfo);
         }}>
             <div className={styles.thumbnail}>
+                {isLoading &&
+                    <div className={styles.queue_state}>
+                        <LoadingSpinner />
+                    </div>
+                }
+
+                {isQueued &&
+                    <div className={styles.queue_state}>
+                        <SuccessIcon />
+                    </div>
+                }
+
                 <img loading="lazy" src={thumbnail} />
                 <div className={styles.episode_number}>
                     <Typography variant="heading" size="sm" weight="bold">
