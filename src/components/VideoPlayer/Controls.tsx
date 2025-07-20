@@ -1,6 +1,6 @@
 import { useCallback, memo, useRef, useEffect } from "react";
 
-import { PlayIcon, PauseIcon, ReplayIcon, FullscreenIcon, VolumeMuteIcon, VolumeMinIcon, VolumeMaxIcon } from "#/components/Icons/Icons";
+import { PlayIcon, PauseIcon, ReplayIcon, FullscreenIcon, VolumeMuteIcon, VolumeMinIcon, VolumeMaxIcon, SkipIcon } from "#/components/Icons/Icons";
 import styles from "./Controls.module.scss";
 
 type BaseControlButtonProps = {
@@ -100,7 +100,6 @@ export const VolumeControl = memo(({ volume, muted, onClick, onVolumeChange }: {
         volumeWrapper?.addEventListener("click", handleVolumeChange, { signal });
         volumeWrapper?.addEventListener("mousedown", () => adjustingVolume = true, { signal });
         document.addEventListener("mousemove", (e) => {
-            console.log(adjustingVolume);
             if (!adjustingVolume) return;
             handleVolumeChange(e);
         }, { signal });
@@ -121,5 +120,13 @@ export const VolumeControl = memo(({ volume, muted, onClick, onVolumeChange }: {
                 style={{ width: `${volume}%` }}
             ></div>
         </div>
+    </>);
+});
+
+export const SkipButton = memo(({ handleClick }: { handleClick: () => void }) => {
+    return (<>
+        <ControlButton onClick={handleClick}>
+            <SkipIcon width={"20px"} height={"20px"} />
+        </ControlButton>
     </>);
 });

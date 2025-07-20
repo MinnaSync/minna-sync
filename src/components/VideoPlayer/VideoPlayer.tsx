@@ -6,7 +6,7 @@ import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
 
 import styles from "./VideoPlayer.module.scss";
-import { ControlGroup, PlayPauseButton, ToggleFullscreenButton, VolumeControl } from './Controls';
+import { ControlGroup, PlayPauseButton, SkipButton, ToggleFullscreenButton, VolumeControl } from './Controls';
 import { Typography } from '../Typography/Typography';
 
 type VideoPlayerProps = {
@@ -15,6 +15,7 @@ type VideoPlayerProps = {
     time?: number;
     paused?: boolean;
     nowPlaying: string | null;
+    onSkip?: () => void;
     onReady?: () => void;
 };
 
@@ -32,7 +33,7 @@ const formatTime = (time: number) => {
     return `${hours}:${minutes}:${seconds}`;
 };
 
-export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: VideoPlayerProps) {
+export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onReady }: VideoPlayerProps) {
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const timerRef = useRef<HTMLDivElement | null>(null);
     const progressRef = useRef<HTMLDivElement | null>(null);
@@ -215,6 +216,9 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onReady }: Vid
                             ended={false}
                             handlePausePlay={handlePausePlay}
                         />
+                        {onSkip && <SkipButton
+                            handleClick={() => onSkip()}
+                        />}
                         <VolumeControl
                             volume={volume * 100}
                             muted={isMuted}
