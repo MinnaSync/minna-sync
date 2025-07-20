@@ -7,7 +7,6 @@ import { useWebsocket } from "#/providers/WebsocketProvider";
 import { QueuedMedia } from "#/util/ws/types";
 import { Typography } from "#/components/Typography/Typography";
 import neptune from "#/util/api/neptune";
-import { Spinner } from "@vidstack/react";
 import LoadingSpinner from "#/components/Loading/LoadingSpinner";
 import { SuccessIcon } from "#/components/Icons/Icons";
 
