@@ -123,10 +123,7 @@ export function Channel() {
             setSeries(series  || "Unknown Series");
             setTitle(title || "No title");
 
-            const queuedMedia = queue.find((m) => m.id === id);
-            if (queuedMedia) {
-                setQueue(queue.filter((m) => m.id !== id))
-            }
+            setQueue((p) => p.filter((m) => m.id !== id));
         }, { signal });
 
         websocket.on("queue_updated", (item) => {
