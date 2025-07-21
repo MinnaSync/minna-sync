@@ -1,13 +1,20 @@
 .queue_item {
+    user-select: none;
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 10px;
-    width: 100%;
+
+    padding: 10px;
+    border-radius: 10px;
+
+    border: 1px solid var(--border-faint);
+    background-color: var(--modifier-background);
     
     .poster {
         width: 47px;
         height: 70px;
+        border-radius: 5px;
     }
 
     .details {
