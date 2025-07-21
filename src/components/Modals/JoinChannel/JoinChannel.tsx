@@ -35,7 +35,7 @@ export function JoinChannel({ channelId, onSubmit }: JoinChannelProps) {
                             type: FormFieldType.ShortText,
                             label: "Username",
                             minLength: 3,
-                            maxLength: 20,
+                            maxLength: 16,
                             required: true,
                         },
                     }}
