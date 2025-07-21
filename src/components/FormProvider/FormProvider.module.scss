@@ -1,0 +1,41 @@
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .heading {
+        .label {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .is_required {
+            color: var(--accent-red);
+        }
+    }
+
+    input {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid var(--border-faint);
+        background-color: var(--input-background);
+
+        &:focus-within {
+            border-color: var(--accent-primary);
+        }
+    }
+
+    .error {
+        color: var(--text-secondary);
+    }
+}

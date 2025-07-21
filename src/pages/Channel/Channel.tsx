@@ -147,7 +147,7 @@ export function Channel() {
         }, { signal });
 
         websocket.on("channel_message", (m) => {
-            setMessages(messages => [...messages, m]);
+            setMessages((messages) => [...messages, m]);
         }, { signal });
 
         return () => controller.abort();
@@ -156,12 +156,9 @@ export function Channel() {
     return (<>
         {displayJoinRoomModal && <JoinChannel
             channelId={channelId}
-            onSubmit={({ username }) => {
-                setGuestUser(username);
+            onSubmit={({ guestUsername }) => {
+                setGuestUser(guestUsername);
                 setDisplayJoinRoomModal(false);
-            }}
-            onClose={() => {
-                
             }}
         ></JoinChannel>}
         <div className={styles.container}>

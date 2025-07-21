@@ -13,6 +13,7 @@ interface ButtonProps {
         position: 'left' | 'right';
         element: JSX.Element;
     };
+    form?: string;
     children?: ReactNode;
     onClick?: () => void;
 }
@@ -35,6 +36,7 @@ export default function Button(
                 props.disabled ? undefined : props.onClick
             }
             type={props.type}
+            form={props.form}
         >
             { props.icon && props.icon.position === 'left' && props.icon.element }
             { props.children &&
