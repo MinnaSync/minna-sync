@@ -9,7 +9,7 @@
         align-items: center;
 
         border: 1px solid var(--border-faint);
-        border-radius: 8px;
+        border-radius: 10px;
         background-color: var(--input-background);
 
         &:has(.search_input:focus-within) {
