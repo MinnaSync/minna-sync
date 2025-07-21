@@ -37,25 +37,28 @@ export function FormProvider({ id, fields, onSubmitFail, onSubmit }: FormProvide
         const errors: Record<string, string> = {};
 
         const data = new FormData(e.target as HTMLFormElement);
-        for (const [key, value] of data.entries()) {
+        for (const [key] of data.entries()) {
             const field = fields[key];
 
-            if (field.required && (!value || value.length === 0)) {
+            const value = data.get(key)!;
+            const valueStr = value.toString();
+
+            if (field.required && (!value || valueStr.length === 0)) {
                 errors[key] = "This field is required.";
                 continue;
             }
 
-            if (field.minLength && value.length < field.minLength) {
+            if (field.minLength && valueStr.length < field.minLength) {
                 errors[key] = `Can't be less than ${field.minLength} characters.`;
                 continue;
             }
 
-            if (field.maxLength && value.length > field.maxLength) {
+            if (field.maxLength && valueStr.length > field.maxLength) {
                 errors[key] = `Can't be more than ${field.maxLength} characters.`;
                 continue;
             }
 
-            results[key] = value;
+            results[key] = valueStr;
         }
 
         if (Object.keys(errors).length > 0) {
