@@ -64,7 +64,7 @@ export const MessagesArea = memo(({ messages }: MessageAreaProps) => {
                     {m.type === MessageType.MediaRemoved &&
                         <Notification
                             icon={<DeleteIcon />}
-                            header="UNQUEUED"
+                            header="REMOVED FROM QUEUE"
                             accent="Primary"
                         >{m.content}</Notification>
                     }
