@@ -1,0 +1,19 @@
+.queue_item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    
+    .poster {
+        width: 47px;
+        height: 70px;
+    }
+
+    .details {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        width: 100%;
+    }
+}

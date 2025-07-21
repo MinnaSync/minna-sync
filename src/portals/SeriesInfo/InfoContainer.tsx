@@ -19,7 +19,6 @@ type InfoContainerProps = {
     provider: "animepahe";
 
     queue: Array<QueuedMedia>;
-
     onClose: () => void;
 };
 

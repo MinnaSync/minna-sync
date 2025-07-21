@@ -1,19 +1,20 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "react-router";
+import styles from "./Channel.module.scss"
 
 import { ChannelMessage, CommandType, QueuedMedia, TimeUpdateEvent } from "#/util/ws/types";
+
+import { useWebsocket } from "#/providers/WebsocketProvider";
+import { ModalType, useModal } from "#/providers/ModalProvider";
 
 import { Header } from "#/components/Header/Header";
 import { VideoPlayer } from "#/components/VideoPlayer/VideoPlayer";
 import { SearchInput } from "#/components/Input//Search/SearchInput";
-
-import { useWebsocket } from "#/providers/WebsocketProvider";
-
-import styles from "./Channel.module.scss"
 import { MediaPlayerInstance, useStore } from "@vidstack/react";
 import { InfoContainer } from "#/portals/SeriesInfo/InfoContainer";
 import { JoinChannel } from "#/components/Modals/JoinChannel/JoinChannel";
 import { Chat } from "#/components/Chat/Chat";
+import { ManageQueue } from "#/components/Modals/ManageQueue/ManageQueue";
 
 export function Channel() {
     const playerRef = useRef<MediaPlayerInstance | null>(null);
@@ -21,10 +22,10 @@ export function Channel() {
 
     const channelId = useParams().channelId!;
     const websocket = useWebsocket();
+    const modal = useModal();
 
     const [ provider, _ ] = useState<"animepahe">("animepahe");
 
-    const [ displayJoinRoomModal, setDisplayJoinRoomModal ] = useState(false);
     const [ connected, setConnected ] = useState(false);
     const [ guestUser, setGuestUser ] = useState<null | string>(null);
     const [ messages, setMessages ] = useState<Array<ChannelMessage>>([]);
@@ -93,7 +94,7 @@ export function Channel() {
 
         websocket.on("connected", () => {
             setConnected(true);
-            setDisplayJoinRoomModal(true);
+            modal.setModal(ModalType.JoinChannel);
         }, { signal });
 
         websocket.on("room_data", ({ now_playing, queue, messages }) => {
@@ -126,6 +127,10 @@ export function Channel() {
             setQueue((p) => p.filter((m) => m.id !== id));
         }, { signal });
 
+        websocket.on("media_removed", ({ id }) => {
+            setQueue((p) => p.filter((m) => m.id !== id));
+        }, { signal }),
+
         websocket.on("queue_updated", (item) => {
             setQueue((p) => [...p, item]);
         }, { signal });
@@ -154,13 +159,25 @@ export function Channel() {
     }, []);
 
     return (<>
-        {displayJoinRoomModal && <JoinChannel
-            channelId={channelId}
-            onSubmit={({ guestUsername }) => {
-                setGuestUser(guestUsername);
-                setDisplayJoinRoomModal(false);
-            }}
-        ></JoinChannel>}
+        {modal.modal === ModalType.JoinChannel &&
+            <JoinChannel
+                channelId={channelId}
+                onSubmit={({ guestUsername }) => {
+                    setGuestUser(guestUsername);
+                    modal.setModal(null);
+                }
+            }></JoinChannel>
+        }
+        {modal.modal === ModalType.ManageQueue &&
+            <ManageQueue
+                queue={queue}
+
+                onClose={() => {
+                    modal.setModal(null);
+                }}
+            ></ManageQueue>
+        }
+
         <div className={styles.container}>
             <Header>
                 <SearchInput

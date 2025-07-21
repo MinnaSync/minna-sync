@@ -1,14 +1,18 @@
 import { memo, useRef } from "react";
 import { useParams } from "react-router";
+import styles from './BottomArea.module.scss'
+
 import { useWebsocket } from "#/providers/WebsocketProvider";
+import { ModalType, useModal } from "#/providers/ModalProvider";
+
 import { CommandType } from "#/util/ws/types";
 import Button from "#/components/Button/Button";
 import { Input } from "#/components/Input/Input";
-
-import styles from './BottomArea.module.scss'
-import { PurgeMessagesIcon, SendMessageIcon, TakeRemoteIcon } from "../Icons/Icons";
+import { PurgeMessagesIcon, SendMessageIcon, TakeRemoteIcon, ViewQueueIcon } from "#/components/Icons/Icons";
 
 export const BottomArea = memo(() => {
+    const modal = useModal();
+
     const inputRef = useRef<HTMLInputElement>(null);
     const channelId = useParams().channelId;
     const websocket = useWebsocket();
@@ -51,17 +55,21 @@ export const BottomArea = memo(() => {
                     <Button
                         type="submit"
                         display="Ghost"
-                        color="Danger"
+                        color="White"
                         textInverted
                         icon={{
                             position: 'left',
-                            element: <PurgeMessagesIcon
+                            element: <ViewQueueIcon
                                 width="24px"
                                 height="24px"
                             />
                         }}
-                        onClick={() => runCommand(CommandType.PurgeMessages)}
-                    ></Button>
+                        onClick={() => {
+                            if (modal.modal !== null) return;
+                            modal.setModal(ModalType.ManageQueue);
+                        }}
+                    >
+                    </Button>
                     <Button
                         type="submit"
                         display="Ghost"
@@ -75,6 +83,20 @@ export const BottomArea = memo(() => {
                             />
                         }}
                         onClick={() => runCommand(CommandType.TakeRemote)}
+                    ></Button>
+                    <Button
+                        type="submit"
+                        display="Ghost"
+                        color="Danger"
+                        textInverted
+                        icon={{
+                            position: 'left',
+                            element: <PurgeMessagesIcon
+                                width="24px"
+                                height="24px"
+                            />
+                        }}
+                        onClick={() => runCommand(CommandType.PurgeMessages)}
                     ></Button>
                 </div>
                 <div className={styles.quick_actions_group}>

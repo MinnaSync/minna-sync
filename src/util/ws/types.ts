@@ -82,7 +82,9 @@ export type GenericPlayingMedia = {
 
 export interface NowPlaying extends GenericMedia, GenericPlayingMedia {};
 
-export type QueuedMedia = { id: string } & GenericMedia;
+export type QueueMediaId = { id: string };
+
+export type QueuedMedia = QueueMediaId & GenericMedia;
 
 export enum MessageType {
     /** A system notification */
@@ -97,6 +99,8 @@ export enum MessageType {
     MediaChanged = 4,
     /** When media is queued to be played. */
     MediaQueued = 5,
+    /** When Media is removed from the queue */
+    MediaRemoved = 6,
 }
 
 export type ChannelMessage = {

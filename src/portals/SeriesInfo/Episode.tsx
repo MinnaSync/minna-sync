@@ -52,7 +52,6 @@ export const Episode = memo(({ id, series, title, poster, number, thumbnail, que
                 poster_image_url: poster,
             }
 
-            queue.push(queueInfo);
             websocket.emit("queue_media", queueInfo);
         }}>
             <div className={styles.thumbnail}>

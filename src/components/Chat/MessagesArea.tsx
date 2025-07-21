@@ -3,7 +3,7 @@ import { UserMessage, Notification } from "./ChannelMessage";
 
 import styles from './MessagesArea.module.scss'
 import { ChannelMessage, MessageType } from "#/util/ws/types";
-import { PlayIcon, QueueIcon, UserJoinIcon, UserLeaveIcon } from "../Icons/Icons";
+import { DeleteIcon, PlayIcon, QueueIcon, UserJoinIcon, UserLeaveIcon } from "../Icons/Icons";
 
 type MessageAreaProps = {
     messages: Array<ChannelMessage>;
@@ -58,6 +58,13 @@ export const MessagesArea = memo(({ messages }: MessageAreaProps) => {
                         <Notification
                             icon={<PlayIcon />}
                             header="NOW PLAYING"
+                            accent="Primary"
+                        >{m.content}</Notification>
+                    }
+                    {m.type === MessageType.MediaRemoved &&
+                        <Notification
+                            icon={<DeleteIcon />}
+                            header="UNQUEUED"
                             accent="Primary"
                         >{m.content}</Notification>
                     }
