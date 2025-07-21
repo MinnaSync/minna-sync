@@ -44,6 +44,7 @@ export const Episode = memo(({ id, series, title, poster, number, thumbnail, que
             const info = episodeInfo.value;
             const queueInfo = {
                 id, title, series,
+                episode: number,
                 /**
                  * TODO: Find the most relaible link (1080 -> 720 -> etc)
                  * The backend should be updated to provide a sort order to make this easier on the frontend.

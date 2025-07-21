@@ -36,6 +36,7 @@ export function ManageQueue({ queue, onClose }: ManageQueue) {
                             poster={i.poster_image_url!}
                             title={i.title!}
                             series={i.series!}
+                            episode={i.episode}
 
                             onRemove={() => handleRemove(i.id)}
                         />

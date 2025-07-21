@@ -60,6 +60,10 @@ export type GenericMedia = {
      */
     series?: string | null;
     /**
+     * The episode number of the currently playing media.
+     */
+    episode?: number | null;
+    /**
      * The URL associated with the media.
      */
     url: string;

@@ -8,17 +8,18 @@ type QueueItemProps = {
 
     title: string;
     series: string;
+    episode?: number | null;
 
     onRemove: () => void;
 };
 
-export function QueueItem({ poster, title, series, onRemove }: QueueItemProps) {
+export function QueueItem({ poster, title, series, episode, onRemove }: QueueItemProps) {
     return (<>
         <div className={styles.queue_item}>
             <img className={styles.poster} src={poster} />
             <div className={styles.details}>
                 <Typography variant="heading" size="md" weight="bold">
-                    {title}
+                    {title} {episode && `(EP ${episode})`}
                 </Typography>
                 <Typography variant="heading" size="sm" weight="medium">
                     {series}
