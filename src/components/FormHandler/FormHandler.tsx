@@ -1,5 +1,5 @@
 import { FormEvent, Fragment, useState } from "react";
-import styles from "./FormProvider.module.scss";
+import styles from "./FormHandler.module.scss";
 
 import { Input } from "#/components/Input/Input";
 import { Typography } from "../Typography/Typography";
@@ -8,7 +8,7 @@ export enum FormFieldType {
     ShortText,
 }
 
-type FormProviderField = {
+type FormHandlerField = {
     type: FormFieldType;
 
     label: string;
@@ -19,15 +19,15 @@ type FormProviderField = {
     required?: boolean;
 };
 
-type FormProviderProps = {
+type FormHandlerProps = {
     id: string;
-    fields: { [id: string]: FormProviderField };
+    fields: { [id: string]: FormHandlerField };
 
     onSubmitFail: () => void;
     onSubmit: (data: Record<string, string>) => void;
 };
 
-export function FormProvider({ id, fields, onSubmitFail, onSubmit }: FormProviderProps) {
+export function FormHandler({ id, fields, onSubmitFail, onSubmit }: FormHandlerProps) {
     const [ fieldErrors, setFieldErrors ] = useState<Record<string, string>>({});
     
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {

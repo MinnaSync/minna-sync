@@ -4,7 +4,7 @@ import styles from "./JoinChannel.module.scss";
 import { Modal } from "#/portals/Modals/Modal";
 
 import Button from "#/components/Button/Button";
-import { FormFieldType, FormProvider } from "#/components/FormProvider/FormProvider";
+import { FormFieldType, FormHandler } from "#/components/FormHandler/FormHandler";
 import { Typography } from "#/components/Typography/Typography";
 
 type JoinChannelProps = {
@@ -28,7 +28,7 @@ export function JoinChannel({ channelId, onSubmit }: JoinChannelProps) {
                 </Typography>
             </div>
             <div className={styles.body}>
-                <FormProvider
+                <FormHandler
                     id="join_channel"
                     fields={{
                         guestUsername: {
