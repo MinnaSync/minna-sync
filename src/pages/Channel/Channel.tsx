@@ -14,7 +14,6 @@ import { InfoContainer } from "#/portals/SeriesInfo/InfoContainer";
 import { JoinChannel } from "#/components/Modals/JoinChannel/JoinChannel";
 import { Chat } from "#/components/Chat/Chat";
 import { ManageQueue } from "#/components/Modals/ManageQueue/ManageQueue";
-import { Typography } from "#/components/Typography/Typography";
 
 export function Channel() {
     const playerRef = useRef<MediaPlayerInstance | null>(null);
@@ -180,8 +179,7 @@ export function Channel() {
 
         <div className={styles.container}>
             <div className={styles.header}>
-                <div className={styles.left}>
-                </div>
+                <div className={styles.left}></div>
                 <div className={styles.center}>
                     <SearchInput
                         provider={provider}
