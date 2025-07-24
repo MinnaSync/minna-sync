@@ -84,6 +84,8 @@ export function SearchInput({ provider, onClickResult }: SearchInputProps) {
         input?.addEventListener('blur', () => {
             setIsFocused(false);
         }, { signal });
+
+        return () => controller.abort();
     }, []);
 
     useEffect(() => {

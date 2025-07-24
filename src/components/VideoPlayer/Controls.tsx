@@ -105,6 +105,8 @@ export const VolumeControl = memo(({ volume, muted, onClick, onVolumeChange }: {
         }, { signal });
         document?.addEventListener("mouseup", () => adjustingVolume = false, { signal });
         document?.addEventListener("mouseleave", () => adjustingVolume = false, { signal });
+
+        return () => controller.abort();
     }, []);
 
     return (<>

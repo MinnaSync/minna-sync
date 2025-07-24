@@ -168,6 +168,8 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
 
         player?.addEventListener("playing", () => setIsPaused(false), { signal });
         player?.addEventListener("pause", () => setIsPaused(true), { signal });
+
+        return () => controller.abort();
     }, []);
 
     return (<>
