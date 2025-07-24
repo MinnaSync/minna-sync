@@ -1,13 +1,41 @@
 .container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100%;
 
     .page_contents {
         overflow: hidden;
         display: flex;
         flex-direction: row;
         flex: 1;
+    }
+
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 25px;
+
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--border-faint);
+
+        .left {
+            display: flex;
+            justify-content: flex-start;
+            flex: 1;
+        }
+
+        .center {
+            display: flex;
+            justify-content: center;
+            flex: 0 0 auto;
+        }
+
+        .right {
+            display: flex;
+            justify-content: flex-end;
+            flex: 1;
+        }
     }
 }
 

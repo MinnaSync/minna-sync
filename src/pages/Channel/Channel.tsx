@@ -7,7 +7,6 @@ import { ChannelMessage, CommandType, QueuedMedia, TimeUpdateEvent } from "#/uti
 import { useWebsocket } from "#/providers/WebsocketProvider";
 import { ModalType, useModal } from "#/providers/ModalProvider";
 
-import { Header } from "#/components/Header/Header";
 import { VideoPlayer } from "#/components/VideoPlayer/VideoPlayer";
 import { SearchInput } from "#/components/Input//Search/SearchInput";
 import { MediaPlayerInstance, useStore } from "@vidstack/react";
@@ -15,6 +14,7 @@ import { InfoContainer } from "#/portals/SeriesInfo/InfoContainer";
 import { JoinChannel } from "#/components/Modals/JoinChannel/JoinChannel";
 import { Chat } from "#/components/Chat/Chat";
 import { ManageQueue } from "#/components/Modals/ManageQueue/ManageQueue";
+import { Typography } from "#/components/Typography/Typography";
 
 export function Channel() {
     const playerRef = useRef<MediaPlayerInstance | null>(null);
@@ -179,12 +179,17 @@ export function Channel() {
         }
 
         <div className={styles.container}>
-            <Header>
-                <SearchInput
-                    provider={provider}
-                    onClickResult={(id) => setOpenedPage(id)}
-                />
-            </Header>
+            <div className={styles.header}>
+                <div className={styles.left}>
+                </div>
+                <div className={styles.center}>
+                    <SearchInput
+                        provider={provider}
+                        onClickResult={(id) => setOpenedPage(id)}
+                    />
+                </div>
+                <div className={styles.right}></div>
+            </div>
             <div id="search_info"></div>
             <div className={styles.page_contents}>
                 {openedPage && <InfoContainer
