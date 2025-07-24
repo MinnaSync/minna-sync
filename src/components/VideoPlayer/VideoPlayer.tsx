@@ -38,6 +38,7 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
     const timerRef = useRef<HTMLDivElement | null>(null);
     const progressRef = useRef<HTMLDivElement | null>(null);
     const progressBarRef = useRef<HTMLDivElement | null>(null);
+    const timeRef = useRef<HTMLDivElement | null>(null);
 
     const remote = useMediaRemote(ref.current)
     const providerRef = useRef<MediaProviderInstance | null>(null);
@@ -62,6 +63,14 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
         provider.library = HLS;
     }, []);
 
+    const handleTimestampUpdate = useCallback((time: number) => {
+        const typographyEl = timeRef.current?.firstElementChild as HTMLElement;
+        if (!ref.current || !timeRef.current || !typographyEl) return;
+
+        timeRef.current.style.width = `${time / ref.current.duration * 100}%`;
+        typographyEl.innerText = `${formatTime(time)}`;
+    }, []);
+
     const handlePausePlay = useCallback(() => {
         remote.togglePaused();
     }, []);
@@ -71,6 +80,7 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
 
         progressBarRef.current.style.width = `${ref.current.currentTime / ref.current.duration * 100}%`;
         setCurrentTime(`${formatTime(ref.current.currentTime)} / ${formatTime(ref.current.duration)}`);
+        handleTimestampUpdate(ref.current.currentTime);
     }, []);
 
     const handleSeekingUpdate = useCallback((e: MouseEvent | TouchEvent) => {
@@ -206,6 +216,11 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
                 </MediaProvider>
             </MediaPlayer>
             <div className={styles.controls}>
+                <div className={styles.timestamp}>
+                    <div ref={timeRef} className={styles.current_time}>
+                        <Typography variant='heading' weight='medium' size='sm'>00:00</Typography>
+                    </div>
+                </div>
                 <div ref={progressRef} className={styles.progress}>
                     <div ref={progressBarRef} className={styles.bar} />
                 </div>

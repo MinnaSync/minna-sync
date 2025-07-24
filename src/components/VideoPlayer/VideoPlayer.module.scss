@@ -69,6 +69,25 @@
         font-size: 14px;
     }
 
+    .timestamp {
+        position: relative;
+        width: 100%;
+        opacity: 0;
+        transition: opacity 0.1s ease-in-out;
+
+        .current_time {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+
+            width: 0;
+            min-width: fit-content;
+        }
+    }
+    &:has(.progress:is(:hover, :active)) .timestamp {
+        opacity: 1;
+    }
+
     .progress {
         position: relative;
         display: flex;
