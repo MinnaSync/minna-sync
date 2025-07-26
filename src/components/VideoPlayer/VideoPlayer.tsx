@@ -208,9 +208,9 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
                 <div className={styles.controls}>
                     <TimeSlider.Root ref={sliderRef} className={styles.time_slider}>
                         <TimeSlider.Track className={styles.track} />
-                        <TimeSlider.TrackFill />
+                        <TimeSlider.TrackFill className={styles.track_fill} />
                         <TimeSlider.Progress className={styles.progress} />
-                        <TimeSlider.Thumb />
+                        <TimeSlider.Thumb className={styles.thumb} />
                         
                         <TimeSlider.Preview ref={previewRef} className={styles.preview_timestamp}>
                             <Typography variant='heading' weight='medium' size='sm'>00:00</Typography>
