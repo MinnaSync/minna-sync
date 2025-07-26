@@ -37,14 +37,12 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const timerRef = useRef<HTMLDivElement | null>(null);
     const progressRef = useRef<HTMLDivElement | null>(null);
-    const progressBarRef = useRef<HTMLDivElement | null>(null);
-    const timeRef = useRef<HTMLDivElement | null>(null);
+    const previewRef = useRef<HTMLDivElement | null>(null);
 
     const remote = useMediaRemote(ref.current)
     const providerRef = useRef<MediaProviderInstance>(null);
     const sliderRef = useRef<TimeSliderInstance>(null);
     const playerInstace = useStore(MediaPlayerInstance, ref);
-    const timeSliderInstance = useStore(TimeSliderInstance, sliderRef);
     useStore(MediaProviderInstance, providerRef);
 
     const [ playerFocused, setPlayerFocused ] = useState(false);
@@ -62,23 +60,8 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
         provider.library = HLS;
     }, []);
 
-    const handleTimestampUpdate = useCallback((time: number) => {
-        const typographyEl = timeRef.current?.firstElementChild as HTMLElement;
-        if (!ref.current || !timeRef.current || !typographyEl) return;
-
-        timeRef.current.style.width = `${time / ref.current.duration * 100}%`;
-        typographyEl.innerText = `${formatTime(time)}`;
-    }, []);
-
     const handlePausePlay = useCallback(() => {
         remote.togglePaused();
-    }, []);
-
-    const handleTimerUpdate = useCallback(() => {
-        if (!ref.current || !progressBarRef.current || !timerRef.current) return;
-
-        progressBarRef.current.style.width = `${ref.current.currentTime / ref.current.duration * 100}%`;
-        handleTimestampUpdate(ref.current.currentTime);
     }, []);
 
     const handleSeekingUpdate = useCallback((e: MouseEvent | TouchEvent) => {
@@ -97,11 +80,26 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
         const percentage = (clickX / rect.width) * 100;
 
         remote.seek(ref.current.duration * percentage / 100);
-        handleTimerUpdate();
     }, []);
 
     useEffect(() => {
         remote.changeClipEnd(ref.current!.duration + 0.1);
+
+        const player  = ref.current;
+        player?.subscribe(({ currentTime, duration }) => {
+            const typographyEl = timerRef.current?.firstElementChild as HTMLElement;
+            if (!ref.current || !typographyEl) return;
+
+            typographyEl.innerText = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+        });
+
+        const slider = sliderRef.current;
+        slider?.subscribe(({ pointerRate }) => {
+            const typographyEl = previewRef.current?.firstElementChild as HTMLElement;
+            if (!ref.current || !typographyEl) return;
+
+            typographyEl.innerText = `${formatTime(pointerRate * ref.current.duration)}`;
+        });
     }, []);
 
     useEffect(() => {
@@ -192,7 +190,6 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
                 viewType="video"
                 ref={ref}
                 className={styles.player} src={src}
-                onTimeUpdate={handleTimerUpdate}
                 onProviderChange={onProviderChange}
                 onLoadedMetadata={() => {
                     if (time !== undefined)
@@ -215,10 +212,8 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
                         <TimeSlider.Progress className={styles.progress} />
                         <TimeSlider.Thumb />
                         
-                        <TimeSlider.Preview className={styles.preview_timestamp}>
-                            <Typography variant='heading' weight='medium' size='sm'>
-                                {formatTime(timeSliderInstance.pointerRate * playerInstace.duration)}
-                            </Typography>
+                        <TimeSlider.Preview ref={previewRef} className={styles.preview_timestamp}>
+                            <Typography variant='heading' weight='medium' size='sm'>00:00</Typography>
                         </TimeSlider.Preview>
                     </TimeSlider.Root>
                     
@@ -248,13 +243,8 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
                                     remote.changeVolume(v);
                                 }} 
                             />
-                            <div
-                                ref={timerRef}
-                                className={styles.timer}
-                            >
-                                <Typography variant='heading' weight='medium' size='sm'>
-                                    {`${formatTime(playerInstace.currentTime)} / ${formatTime(playerInstace.duration)}`}
-                                </Typography>
+                            <div ref={timerRef} className={styles.timer}>
+                                <Typography variant='heading' weight='medium' size='sm'>00:00 / 00:00</Typography>
                             </div>
                         </ControlGroup>
                         <ControlGroup>
