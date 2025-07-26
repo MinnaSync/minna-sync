@@ -83,7 +83,7 @@ export const VolumeControl = memo(({ volume, muted, onClick, onVolumeChange }: {
             clickX = e.touches[0].clientX - rect.left;
         }
 
-        const percentage = Math.min((clickX / rect.width) * 100, 100);
+        const percentage = Math.max(Math.min((clickX / rect.width) * 100, 100), 0);
         onVolumeChange(percentage);
     }, []);
 

@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { isHLSProvider, MediaPlayer, MediaPlayerInstance, MediaProvider, MediaProviderAdapter, MediaProviderChangeEvent, MediaProviderInstance, useMediaRemote, useStore } from '@vidstack/react';
+import { isHLSProvider, MediaPlayer, MediaPlayerInstance, MediaProvider, MediaProviderAdapter, MediaProviderChangeEvent, MediaProviderInstance, TimeSlider, TimeSliderInstance, useMediaRemote, useStore } from '@vidstack/react';
 import HLS from 'hls.js';
 
 import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
 
 import styles from "./VideoPlayer.module.scss";
+import { Typography } from '#/components/Typography/Typography';
 import { ControlGroup, PlayPauseButton, SkipButton, ToggleFullscreenButton, VolumeControl } from './Controls';
-import { Typography } from '../Typography/Typography';
 
 type VideoPlayerProps = {
     ref: React.RefObject<MediaPlayerInstance | null>;
@@ -41,14 +41,13 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
     const timeRef = useRef<HTMLDivElement | null>(null);
 
     const remote = useMediaRemote(ref.current)
-    const providerRef = useRef<MediaProviderInstance | null>(null);
+    const providerRef = useRef<MediaProviderInstance>(null);
+    const sliderRef = useRef<TimeSliderInstance>(null);
+    const playerInstace = useStore(MediaPlayerInstance, ref);
+    const timeSliderInstance = useStore(TimeSliderInstance, sliderRef);
     useStore(MediaProviderInstance, providerRef);
 
     const [ playerFocused, setPlayerFocused ] = useState(false);
-    const [ isPaused, setIsPaused ] = useState(false);
-    const [ isMuted, setIsMuted ] = useState(ref.current?.muted || false);
-    const [ volume, setVolume ] = useState(ref.current?.volume || 1);
-    const [ currentTime, setCurrentTime ] = useState("00:00 / 00:00");
 
     const onProviderChange = useCallback((provider: MediaProviderAdapter | null, _: MediaProviderChangeEvent) => {
         if (!isHLSProvider(provider)) return;
@@ -79,7 +78,6 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
         if (!ref.current || !progressBarRef.current || !timerRef.current) return;
 
         progressBarRef.current.style.width = `${ref.current.currentTime / ref.current.duration * 100}%`;
-        setCurrentTime(`${formatTime(ref.current.currentTime)} / ${formatTime(ref.current.duration)}`);
         handleTimestampUpdate(ref.current.currentTime);
     }, []);
 
@@ -166,9 +164,6 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
 
         player?.addEventListener("ended", () => remote.pause(), { signal });
 
-        player?.addEventListener("playing", () => setIsPaused(false), { signal });
-        player?.addEventListener("pause", () => setIsPaused(true), { signal });
-
         return () => controller.abort();
     }, []);
 
@@ -189,7 +184,6 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
                 }
             </div>
             <MediaPlayer
-                // controls
                 crossOrigin
                 aspectRatio="16/9"
                 preload="metadata"
@@ -208,78 +202,69 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
                         paused
                             ? remote.pause()
                             : remote.play();
-
-                        setIsPaused(paused);
                     }
                 }}
                 onCanPlay={onReady}
             >
                 <MediaProvider ref={providerRef}>
                 </MediaProvider>
-            </MediaPlayer>
-            <div className={styles.controls}>
-                <div className={styles.timestamp}>
-                    <div ref={timeRef} className={styles.current_time}>
-                        <Typography variant='heading' weight='medium' size='sm'>00:00</Typography>
+                <div className={styles.controls}>
+                    <TimeSlider.Root ref={sliderRef} className={styles.time_slider}>
+                        <TimeSlider.Track className={styles.track} />
+                        <TimeSlider.TrackFill />
+                        <TimeSlider.Progress className={styles.progress} />
+                        <TimeSlider.Thumb />
+                        
+                        <TimeSlider.Preview className={styles.preview_timestamp}>
+                            <Typography variant='heading' weight='medium' size='sm'>
+                                {formatTime(timeSliderInstance.pointerRate * playerInstace.duration)}
+                            </Typography>
+                        </TimeSlider.Preview>
+                    </TimeSlider.Root>
+                    
+                    <div className={styles.buttons}>
+                        <ControlGroup>
+                            <PlayPauseButton
+                                paused={playerInstace.paused}
+                                ended={false}
+                                handlePausePlay={handlePausePlay}
+                            />
+                            {onSkip && <SkipButton
+                                handleClick={() => onSkip()}
+                            />}
+                            <VolumeControl
+                                volume={playerInstace.volume * 100}
+                                muted={playerInstace.muted}
+                                onClick={() => {
+                                    remote.toggleMuted();
+                                }}
+                                onVolumeChange={(v) => {
+                                    v = Math.max(Math.min(v / 100, 100), 0);
+
+                                    if (ref.current?.muted && v > 0) {
+                                        remote.toggleMuted();
+                                    };
+
+                                    remote.changeVolume(v);
+                                }} 
+                            />
+                            <div
+                                ref={timerRef}
+                                className={styles.timer}
+                            >
+                                <Typography variant='heading' weight='medium' size='sm'>
+                                    {`${formatTime(playerInstace.currentTime)} / ${formatTime(playerInstace.duration)}`}
+                                </Typography>
+                            </div>
+                        </ControlGroup>
+                        <ControlGroup>
+                            <ToggleFullscreenButton
+                                wrapper={wrapperRef.current!}
+                            />
+                        </ControlGroup>
                     </div>
                 </div>
-                <div ref={progressRef} className={styles.progress}>
-                    <div ref={progressBarRef} className={styles.bar} />
-                </div>
-                <div className={styles.buttons}>
-                    <ControlGroup>
-                        <PlayPauseButton
-                            paused={isPaused}
-                            ended={false}
-                            handlePausePlay={handlePausePlay}
-                        />
-                        {onSkip && <SkipButton
-                            handleClick={() => onSkip()}
-                        />}
-                        <VolumeControl
-                            volume={volume * 100}
-                            muted={isMuted}
-                            onClick={() => {
-                                remote.toggleMuted();
-
-                                /**
-                                 * This seems backwards but it's how it works when toggleMuted() is called.
-                                 */
-                                if (ref.current?.muted) {
-                                    setIsMuted(false);
-                                }
-                                else {
-                                    setIsMuted(true);
-                                }
-                            }}
-                            onVolumeChange={(v) => {
-                                if (ref.current?.muted) {
-                                    remote.toggleMuted();
-                                    setIsMuted(false);
-                                };
-
-                                v = Math.min(v / 100, 100);
-
-                                remote.changeVolume(v);
-                                setVolume(v);
-                            }} 
-                        />
-                        <div
-                            ref={timerRef}
-                            className={styles.timer}
-                        >
-                            <Typography variant='heading' weight='medium' size='sm'>
-                                {currentTime}
-                            </Typography>
-                        </div>
-                    </ControlGroup>
-                    <ControlGroup>
-                        <ToggleFullscreenButton
-                            wrapper={wrapperRef.current!}
-                        />
-                    </ControlGroup>
-                </div>
-            </div>
+            </MediaPlayer>
         </div>
     </>)
 }
