@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { isHLSProvider, MediaPlayer, MediaPlayerInstance, MediaProvider, MediaProviderAdapter, MediaProviderChangeEvent, MediaProviderInstance, TimeSlider, TimeSliderInstance, useMediaRemote, useStore } from '@vidstack/react';
+import { useCallback, useEffect, useRef } from 'react';
+import { Controls, isHLSProvider, MediaPlayer, MediaPlayerInstance, MediaProvider, MediaProviderAdapter, MediaProviderChangeEvent, MediaProviderInstance, TimeSlider, TimeSliderInstance, useMediaRemote, useStore } from '@vidstack/react';
 import HLS from 'hls.js';
 
 import '@vidstack/react/player/styles/default/theme.css';
@@ -34,18 +34,16 @@ const formatTime = (time: number) => {
 };
 
 export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onReady }: VideoPlayerProps) {
-    const wrapperRef = useRef<HTMLDivElement | null>(null);
-    const timerRef = useRef<HTMLDivElement | null>(null);
-    const progressRef = useRef<HTMLDivElement | null>(null);
-    const previewRef = useRef<HTMLDivElement | null>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const timerRef = useRef<HTMLDivElement>(null);
+    const previewRef = useRef<HTMLDivElement>(null);
+    const centerRef = useRef<HTMLDivElement>(null);
 
     const remote = useMediaRemote(ref.current)
     const providerRef = useRef<MediaProviderInstance>(null);
     const sliderRef = useRef<TimeSliderInstance>(null);
     const playerInstace = useStore(MediaPlayerInstance, ref);
     useStore(MediaProviderInstance, providerRef);
-
-    const [ playerFocused, setPlayerFocused ] = useState(false);
 
     const onProviderChange = useCallback((provider: MediaProviderAdapter | null, _: MediaProviderChangeEvent) => {
         if (!isHLSProvider(provider)) return;
@@ -62,24 +60,6 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
 
     const handlePausePlay = useCallback(() => {
         remote.togglePaused();
-    }, []);
-
-    const handleSeekingUpdate = useCallback((e: MouseEvent | TouchEvent) => {
-        if (!progressRef.current || !ref.current) return;
-
-        const rect = progressRef.current.getBoundingClientRect();
-
-        let clickX: number;
-        if (e instanceof MouseEvent) {
-            clickX = e.clientX - rect.left;
-        }
-        else {
-            clickX = e.touches[0].clientX - rect.left;
-        }
-
-        const percentage = (clickX / rect.width) * 100;
-
-        remote.seek(ref.current.duration * percentage / 100);
     }, []);
 
     useEffect(() => {
@@ -100,87 +80,15 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
 
             typographyEl.innerText = `${formatTime(pointerRate * ref.current.duration)}`;
         });
-    }, []);
 
-    useEffect(() => {
-        let seeking = false;
-        let displayControlsTimeout: number | null = null;
+        const center = centerRef.current;
+        center?.addEventListener("click", handlePausePlay);
 
-        const controller = new AbortController();
-        const signal = controller.signal;
-        
-        const player = ref.current;
-        const provider = providerRef.current;
-        const wrapper = wrapperRef.current;
-        const progress = progressRef.current;
-
-        const handleControlsDisplay = () => {
-            if (displayControlsTimeout) {
-                clearTimeout(displayControlsTimeout);
-            }
-
-            if (!playerFocused) {
-                setPlayerFocused(true);
-            }
-
-            // @ts-ignore
-            // Bun uses the web standard, "number".
-            displayControlsTimeout = setTimeout(() => {
-                setPlayerFocused(false);
-            }, 2_500);
-        };
-
-        const handleSeeking = (e: MouseEvent | TouchEvent) => {
-            if (!player || !seeking) return;
-            handleSeekingUpdate(e);
-        };
-
-        const handleStartSeeking = () => {
-            if (!player) return;
-            seeking = true;
-        }
-
-        const handleStopSeeking = async () => {
-            if (!player || !seeking) return;
-            seeking = false;
-        };
-
-        provider?.addEventListener("click", handlePausePlay, { signal });
-
-        wrapper?.addEventListener("mouseenter", handleControlsDisplay, { signal });
-        wrapper?.addEventListener("mousemove", handleControlsDisplay, { signal });
-        wrapper?.addEventListener("touchstart", handleControlsDisplay, { signal });
-
-        progress?.addEventListener("click", (e) => handleSeekingUpdate(e), { signal });
-        progress?.addEventListener("mousedown", handleStartSeeking, { signal });
-        document.addEventListener("mousemove", handleSeeking, { signal });
-        document.addEventListener("mouseup", handleStopSeeking, { signal });
-        document.addEventListener("mouseleave", handleStopSeeking, { signal });
-        progress?.addEventListener("touchstart", handleStartSeeking, { signal });
-        document.addEventListener("touchmove", handleSeeking, { signal });
-        document.addEventListener("touchend", handleStopSeeking, { signal });
-
-        player?.addEventListener("ended", () => remote.pause(), { signal });
-
-        return () => controller.abort();
+        return () => center?.removeEventListener("click", handlePausePlay);
     }, []);
 
     return (<>
-        <div ref={wrapperRef} className={`${styles.video_player}${playerFocused ? ` ${styles.focused}` : ""}`}>
-            <div className={styles.header}>
-                {(nowPlaying && nowPlaying !== "")
-                    ? <>
-                        <Typography variant='heading' weight='medium' size='sm'>
-                            {nowPlaying}
-                        </Typography>
-                    </>
-                    : <>
-                        <Typography variant='heading' weight='medium' size='sm'>
-                            Nothing Playing
-                        </Typography>
-                    </>
-                }
-            </div>
+        <div ref={wrapperRef} className={`${styles.video_player}`}>
             <MediaPlayer
                 crossOrigin
                 aspectRatio="16/9"
@@ -190,6 +98,8 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
                 viewType="video"
                 ref={ref}
                 className={styles.player} src={src}
+                hideControlsOnMouseLeave
+                controlsDelay={5_000}
                 onProviderChange={onProviderChange}
                 onLoadedMetadata={() => {
                     if (time !== undefined)
@@ -205,55 +115,78 @@ export function VideoPlayer({ src, ref, time, paused, nowPlaying, onSkip, onRead
             >
                 <MediaProvider ref={providerRef}>
                 </MediaProvider>
-                <div className={styles.controls}>
-                    <TimeSlider.Root ref={sliderRef} className={styles.time_slider}>
-                        <TimeSlider.Track className={styles.track} />
-                        <TimeSlider.TrackFill className={styles.track_fill} />
-                        <TimeSlider.Progress className={styles.progress} />
-                        <TimeSlider.Thumb className={styles.thumb} />
-                        
-                        <TimeSlider.Preview ref={previewRef} className={styles.preview_timestamp}>
-                            <Typography variant='heading' weight='medium' size='sm'>00:00</Typography>
-                        </TimeSlider.Preview>
-                    </TimeSlider.Root>
-                    
-                    <div className={styles.buttons}>
-                        <ControlGroup>
-                            <PlayPauseButton
-                                paused={playerInstace.paused}
-                                ended={false}
-                                handlePausePlay={handlePausePlay}
-                            />
-                            {onSkip && <SkipButton
-                                handleClick={() => onSkip()}
-                            />}
-                            <VolumeControl
-                                volume={playerInstace.volume * 100}
-                                muted={playerInstace.muted}
-                                onClick={() => {
-                                    remote.toggleMuted();
-                                }}
-                                onVolumeChange={(v) => {
-                                    v = Math.max(Math.min(v / 100, 100), 0);
+                <Controls.Root className={styles.controls}>
+                    <Controls.Group className={styles.header}>
+                        {(nowPlaying && nowPlaying !== "")
+                            ? <>
+                                <Typography variant='heading' weight='medium' size='sm'>
+                                    {nowPlaying}
+                                </Typography>
+                            </>
+                            : <>
+                                <Typography variant='heading' weight='medium' size='sm'>
+                                    Nothing Playing
+                                </Typography>
+                            </>
+                        }
+                    </Controls.Group>
 
-                                    if (ref.current?.muted && v > 0) {
+                    <Controls.Group ref={centerRef} className={styles.center}>
+                    </Controls.Group>
+
+                    <Controls.Group className={styles.media_controls}>
+                        <TimeSlider.Root ref={sliderRef} className={styles.time_slider}>
+                            <TimeSlider.Track className={styles.track} />
+                            <TimeSlider.TrackFill className={styles.track_fill} />
+                            <TimeSlider.Progress className={styles.progress} />
+                            <TimeSlider.Thumb className={styles.thumb} />
+                            
+                            <TimeSlider.Preview ref={previewRef} className={styles.preview_timestamp}>
+                                <Typography variant='heading' weight='medium' size='sm'>00:00</Typography>
+                            </TimeSlider.Preview>
+                        </TimeSlider.Root>
+
+                        <div className={styles.buttons}>
+                            <ControlGroup>
+                                <PlayPauseButton
+                                    paused={playerInstace.paused}
+                                    ended={false}
+                                    handlePausePlay={handlePausePlay}
+                                />
+                                {onSkip && <SkipButton
+                                    handleClick={() => onSkip()}
+                                />}
+                                
+                                {/* TODO: Implement vidstack native volume control. */}
+                                <VolumeControl
+                                    volume={playerInstace.volume * 100}
+                                    muted={playerInstace.muted}
+                                    onClick={() => {
                                         remote.toggleMuted();
-                                    };
+                                    }}
+                                    onVolumeChange={(v) => {
+                                        v = Math.max(Math.min(v / 100, 100), 0);
 
-                                    remote.changeVolume(v);
-                                }} 
-                            />
-                            <div ref={timerRef} className={styles.timer}>
-                                <Typography variant='heading' weight='medium' size='sm'>00:00 / 00:00</Typography>
-                            </div>
-                        </ControlGroup>
-                        <ControlGroup>
-                            <ToggleFullscreenButton
-                                wrapper={wrapperRef.current!}
-                            />
-                        </ControlGroup>
-                    </div>
-                </div>
+                                        if (ref.current?.muted && v > 0) {
+                                            remote.toggleMuted();
+                                        };
+
+                                        remote.changeVolume(v);
+                                    }} 
+                                />
+
+                                <div ref={timerRef} className={styles.timer}>
+                                    <Typography variant='heading' weight='medium' size='sm'>00:00 / 00:00</Typography>
+                                </div>
+                            </ControlGroup>
+                            <ControlGroup>
+                                <ToggleFullscreenButton
+                                    wrapper={wrapperRef.current!}
+                                />
+                            </ControlGroup>
+                        </div>
+                    </Controls.Group>
+                </Controls.Root>
             </MediaPlayer>
         </div>
     </>)
